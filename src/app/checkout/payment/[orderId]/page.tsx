@@ -5,7 +5,6 @@ import { formatRupiah } from "@/helper";
 import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Script from "next/script";
 import { useEffect, useState } from "react";
 import {
   FiAlertCircle,
@@ -26,11 +25,7 @@ import { BsQrCodeScan } from "react-icons/bs";
 import { SiApple } from "react-icons/si";
 import { toast } from "@/components/ui/Toast";
 
-declare global {
-  interface Window {
-    snap: any;
-  }
-}
+
 
 export default function OrderPaymentPage({
   params: { orderId },
@@ -277,14 +272,7 @@ export default function OrderPaymentPage({
       };
     }
 
-    // 6. Snap Modal / Redirect
-    if (order?.token || chg.token || order?.url_redirect) {
-      return {
-        type: "snap",
-        token: order?.token || chg.token,
-        url: order?.url_redirect || chg.redirect_url,
-      };
-    }
+
 
     return {
       type: "generic",
@@ -323,12 +311,6 @@ export default function OrderPaymentPage({
 
   return (
     <>
-      <Script
-        src="https://app.sandbox.midtrans.com/snap/snap.js"
-        data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
-        strategy="lazyOnload"
-      />
-
       <div className="w-full max-w-6xl mx-auto space-y-6 pb-12">
         {/* Navigation Bar */}
         <div className="flex items-center justify-between">
@@ -638,36 +620,7 @@ export default function OrderPaymentPage({
                 </div>
               )}
 
-              {/* Snap Modal Card */}
-              {details.type === "snap" && (
-                <div className="p-8 rounded-3xl bg-neutral-50 border border-neutral-200/80 text-center space-y-4">
-                  <p className="text-xs text-neutral-500 font-semibold uppercase tracking-wider">
-                    Midtrans Payment Gateway
-                  </p>
-                  <p className="text-xs text-neutral-600 max-w-sm mx-auto">
-                    Click the button below to open the official Midtrans payment window.
-                  </p>
-                  <button
-                    onClick={() => {
-                      if (window.snap && details.token) {
-                        window.snap.pay(details.token, {
-                          onSuccess: () => {
-                            setPaymentCompleted(true);
-                            setTimeout(() => router.push(`/account/order/${orderId}`), 2000);
-                          },
-                          onPending: () => handleManualCheck(),
-                          onError: () => setErrorMsg("Payment failed or cancelled."),
-                        });
-                      } else if (details.url) {
-                        window.open(details.url, "_blank");
-                      }
-                    }}
-                    className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-neutral-900 hover:bg-black text-white text-xs font-semibold transition-all shadow-md"
-                  >
-                    <FiCreditCard /> Open Midtrans Payment Window <FiExternalLink />
-                  </button>
-                </div>
-              )}
+
 
               {/* Generic fallback */}
               {details.type === "generic" && (

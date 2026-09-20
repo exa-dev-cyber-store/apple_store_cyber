@@ -177,11 +177,6 @@ export default function RootLayout({
       <head>
         <Script
           type="text/javascript"
-          src="https://app.sandbox.midtrans.com/snap/snap.js"
-          data-client-key={process.env.MIDTRANS_CLIENT_KEY}
-        />
-        <Script
-          type="text/javascript"
           src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js"
           strategy="afterInteractive"
         />

@@ -13,18 +13,11 @@ import {
   FiCheck,
   FiClock,
   FiRefreshCw,
-  FiCreditCard,
   FiExternalLink,
 } from "react-icons/fi";
 import { BsQrCodeScan, BsBank2, BsShop } from "react-icons/bs";
 import { SiApple } from "react-icons/si";
 import { toast } from "@/components/ui/Toast";
-
-declare global {
-  interface Window {
-    snap: any;
-  }
-}
 
 interface PaymentSummaryProps {
   addressId: string;
@@ -44,8 +37,7 @@ type PaymentChannel =
   | "qris"
   | "gopay"
   | "indomaret"
-  | "alfamart"
-  | "snap";
+  | "alfamart";
 
 export default function PaymentSummary({
   setCart,
@@ -280,40 +272,7 @@ export default function PaymentSummary({
     setErrorMessage("");
 
     try {
-      // 1) Midtrans Snap Gateway Option
-      if (selectedChannel === "snap") {
-        const checkout = await axios.post("/api/order", {
-          deliveryAddress: addressId,
-          discount: discount || 0,
-        });
-
-        const token = checkout.data.token;
-        if (setDiscount) setDiscount(0);
-        setAddress("");
-        setCart?.([]);
-
-        if (window.snap && token) {
-          window.snap.pay(token, {
-            onSuccess: function () {
-              router.push("/account/order");
-            },
-            onPending: function () {
-              router.push("/account/order");
-            },
-            onError: function () {
-              setErrorMessage("Payment failed or cancelled. Please try again.");
-            },
-            onClose: function () {
-              router.push("/account/order");
-            },
-          });
-        } else {
-          router.push("/account/order");
-        }
-        return;
-      }
-
-      // 2) Midtrans Core API Direct Charge Option
+      // Direct Midtrans Core API Charge
       let payment_type = "bank_transfer";
       let bank: string | undefined = undefined;
       let store: string | undefined = undefined;
@@ -471,20 +430,10 @@ export default function PaymentSummary({
       };
     }
 
-    // Midtrans Snap / Redirect URL
-    if (charge.token || activePayment.order?.token || activePayment.order?.url_redirect) {
-      return {
-        type: "snap",
-        token: charge.token || activePayment.order?.token,
-        url: activePayment.order?.url_redirect || charge.redirect_url,
-        expiry: charge.expiry_time || "24 Hours",
-      };
-    }
-
     return {
       type: "generic",
-      id: charge.transaction_id || charge.order_id,
-      status: charge.transaction_status,
+      id: charge.transaction_id || charge.order_id || activePayment.order?._id,
+      status: charge.transaction_status || activePayment.order?.status_payment,
     };
   };
 
@@ -652,42 +601,7 @@ export default function PaymentSummary({
                 </div>
               )}
 
-              {chargeDetails?.type === "snap" && (
-                <div className="p-5 rounded-xl bg-neutral-50 border border-neutral-200/80 space-y-3 text-center">
-                  <p className="text-xs text-neutral-500 font-medium">
-                    Midtrans Payment Gateway (Snap)
-                  </p>
-                  <p className="text-xs text-neutral-600">
-                    Click the button below to resume payment in the Midtrans payment modal.
-                  </p>
-                  <button
-                    onClick={() => {
-                      if (window.snap && chargeDetails.token) {
-                        window.snap.pay(chargeDetails.token, {
-                          onSuccess: function () {
-                            setPaymentCompleted(true);
-                            setTimeout(() => router.push("/account/order"), 2000);
-                          },
-                          onPending: function () {
-                            handleManualCheckStatus();
-                          },
-                          onError: function () {
-                            setErrorMessage("Payment failed or was cancelled.");
-                          },
-                          onClose: function () {
-                            handleManualCheckStatus();
-                          },
-                        });
-                      } else if (chargeDetails.url) {
-                        window.open(chargeDetails.url, "_blank");
-                      }
-                    }}
-                    className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-neutral-900 hover:bg-black text-white text-xs font-semibold shadow-sm transition-all"
-                  >
-                    <FiCreditCard /> Pay with Midtrans <FiExternalLink />
-                  </button>
-                </div>
-              )}
+
 
               {chargeDetails?.type === "generic" && (
                 <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200/80 space-y-2 text-center">
@@ -899,24 +813,22 @@ export default function PaymentSummary({
                 </div>
               </button>
 
-              {/* Midtrans Snap Modal */}
+              {/* Convenience Store Alfamart */}
               <button
                 type="button"
-                onClick={() => setSelectedChannel("snap")}
-                className={`col-span-2 flex items-center gap-2.5 p-3 rounded-2xl border text-left transition-all ${
-                  selectedChannel === "snap"
+                onClick={() => setSelectedChannel("alfamart")}
+                className={`flex items-center gap-2.5 p-3 rounded-2xl border text-left transition-all ${
+                  selectedChannel === "alfamart"
                     ? "border-neutral-900 bg-white shadow-sm ring-1 ring-neutral-900"
                     : "border-neutral-200 bg-white hover:bg-neutral-100/60"
                 }`}
               >
-                <FiCreditCard className="text-base text-neutral-700 shrink-0" />
+                <BsShop className="text-base text-blue-600 shrink-0" />
                 <div>
                   <div className="font-semibold text-neutral-900 leading-tight">
-                    Midtrans Snap Popup
+                    Alfamart
                   </div>
-                  <div className="text-[10px] text-neutral-500">
-                    Credit Card / Installments / All Snap Options
-                  </div>
+                  <div className="text-[10px] text-neutral-500">Over the Counter</div>
                 </div>
               </button>
             </div>
@@ -974,11 +886,7 @@ export default function PaymentSummary({
               className="flex-1 flex items-center justify-center gap-2 py-3.5 px-6 rounded-full bg-neutral-900 hover:bg-black text-white text-xs font-semibold transition-all shadow-md active:scale-95 disabled:opacity-50"
             >
               <FiLock />{" "}
-              {loading
-                ? "Connecting..."
-                : selectedChannel === "snap"
-                ? "Pay with Snap"
-                : "Generate Payment"}
+              {loading ? "Connecting..." : "Generate Payment"}
             </button>
           </div>
 
