@@ -180,6 +180,16 @@ export default function RootLayout({
           src="https://app.sandbox.midtrans.com/snap/snap.js"
           data-client-key={process.env.MIDTRANS_CLIENT_KEY}
         />
+        <Script
+          type="text/javascript"
+          src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js"
+          strategy="afterInteractive"
+        />
+        <Script
+          type="text/javascript"
+          src="https://accounts.google.com/gsi/client"
+          strategy="afterInteractive"
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}

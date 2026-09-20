@@ -171,21 +171,21 @@ export default function CreateAlamat() {
       .then((res) => {
         if (res.ok) {
           toast.success(
-            "Alamat Tersimpan",
-            "Alamat pengiriman baru telah berhasil ditambahkan."
+            "Address Saved",
+            "New shipping address has been successfully added."
           );
           router.push("/account/address");
         } else {
           toast.error(
-            "Gagal Menyimpan",
-            "Terjadi kesalahan saat menambahkan alamat baru."
+            "Failed to Save",
+            "An error occurred while adding the new address."
           );
         }
       })
       .catch((err) => {
         toast.error(
-          "Gagal Menyimpan",
-          "Tidak dapat menghubungi server. Silakan coba lagi."
+          "Failed to Save",
+          "Unable to connect to the server. Please try again."
         );
         console.error(err);
       })
@@ -205,7 +205,7 @@ export default function CreateAlamat() {
           href="/account/address"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-600 hover:text-black transition-colors"
         >
-          <FiArrowLeft /> Kembali ke Daftar Alamat
+          <FiArrowLeft /> Back to Addresses
         </Link>
       </div>
 
@@ -214,13 +214,13 @@ export default function CreateAlamat() {
         {/* Card Header */}
         <div className="pb-6 border-b border-neutral-100">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-neutral-100 text-neutral-700 mb-2">
-            <FiMapPin /> Alamat Pengiriman
+            <FiMapPin /> Shipping Address
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
-            Tambah Alamat Baru
+            Add New Address
           </h1>
           <p className="text-xs text-neutral-500 mt-1">
-            Lengkapi data alamat di bawah ini untuk pengiriman produk Apple Anda
+            Fill out the address details below for your Apple orders
           </p>
         </div>
 
@@ -228,16 +228,16 @@ export default function CreateAlamat() {
           {/* Section 1: Penerima */}
           <div className="space-y-4">
             <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
-              Informasi Penerima
+              Recipient Information
             </h3>
             <div className="space-y-1.5">
               <label className="block text-xs font-semibold text-neutral-700">
-                Nama Lengkap Penerima
+                Recipient Full Name
               </label>
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="Contoh: John Appleseed"
+                  placeholder="e.g. John Appleseed"
                   name="name"
                   className={`w-full rounded-2xl border px-4 py-3 text-xs font-medium outline-none transition-all pl-10 ${
                     error.name
@@ -253,7 +253,7 @@ export default function CreateAlamat() {
               {error.name && (
                 <div className="flex items-center gap-1 text-[11px] text-red-500 font-medium pt-0.5">
                   <FiAlertCircle className="shrink-0" />
-                  <span>Nama harus minimal 3 karakter</span>
+                  <span>Name must be at least 3 characters</span>
                 </div>
               )}
             </div>
@@ -262,33 +262,33 @@ export default function CreateAlamat() {
           {/* Section 2: Wilayah Administratif */}
           <div className="space-y-4 pt-4 border-t border-neutral-100">
             <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
-              Wilayah Pengiriman (Indonesia)
+              Delivery Region (Indonesia)
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Select
                 name="provinsi"
-                label="Provinsi"
+                label="Province"
                 handleName={handleName}
                 handleSelect={handleSelect}
                 options={data.provinsi}
               />
               <Select
                 name="kabupaten"
-                label="Kota / Kabupaten"
+                label="City / Regency"
                 handleName={handleName}
                 handleSelect={handleSelect}
                 options={data.kabupaten}
               />
               <Select
                 name="kecamatan"
-                label="Kecamatan"
+                label="District"
                 handleName={handleName}
                 handleSelect={handleSelect}
                 options={data.kecamatan}
               />
               <Select
                 name="kelurahan"
-                label="Desa / Kelurahan"
+                label="Sub-district / Village"
                 handleName={handleName}
                 handleSelect={handleSelect}
                 options={data.kelurahan}
@@ -299,13 +299,13 @@ export default function CreateAlamat() {
           {/* Section 3: Detail Alamat */}
           <div className="space-y-4 pt-4 border-t border-neutral-100">
             <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
-              Alamat Lengkap & Patokan
+              Street Address & Landmarks
             </h3>
             <TextArea
-              label="Alamat Detail (Jalan, RT/RW, Nomor Rumah, Patokan)"
+              label="Street Address (Street name, house number, landmarks)"
               name="detail"
-              placeholder="Contoh: Jl. Sudirman No. 45, RT 02 / RW 05, Blok C, Dekat Pos Satpam"
-              error={error.detail ? "Detail alamat wajib diisi minimal 3 karakter" : undefined}
+              placeholder="e.g. 45 Sudirman St, House No. 12, near security post"
+              error={error.detail ? "Address details must be at least 3 characters" : undefined}
             />
           </div>
 
@@ -315,7 +315,7 @@ export default function CreateAlamat() {
               href="/account/address"
               className="py-3 px-6 rounded-full border border-neutral-200 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors shadow-sm"
             >
-              Batal
+              Cancel
             </Link>
             <button
               disabled={submit || isFormIncomplete}
@@ -327,7 +327,7 @@ export default function CreateAlamat() {
               }`}
             >
               <FiCheck className="text-sm" />
-              <span>{submit ? "Menyimpan Alamat..." : "Simpan Alamat"}</span>
+              <span>{submit ? "Saving Address..." : "Save Address"}</span>
             </button>
           </div>
         </form>

@@ -1,9 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/context/AuthContext";
 import { FiUser, FiMapPin, FiPackage } from "react-icons/fi";
+
+import { useState, useEffect } from "react";
+import { getImageUrl } from "@/helper";
 
 export default function LayoutProfile({
   children,
@@ -11,7 +15,72 @@ export default function LayoutProfile({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { data: session } = useSession();
+  const { session, logout } = useAuth();
+
+  const [userAvatar, setUserAvatar] = useState<string | null>(session?.user?.image || null);
+  const [userName, setUserName] = useState<string | null>(session?.user?.name || null);
+  const [userEmail, setUserEmail] = useState<string | null>(session?.user?.email || null);
+  const [imgError, setImgError] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (session?.user?.image) {
+      setUserAvatar(session.user.image);
+      setImgError(false);
+    }
+    if (session?.user?.name) {
+      setUserName(session.user.name);
+    }
+    if (session?.user?.email) {
+      setUserEmail(session.user.email);
+    }
+  }, [session?.user?.image, session?.user?.name, session?.user?.email]);
+
+  useEffect(() => {
+    fetch("/api/auth/profile")
+      .then((res) => {
+        if (res.status === 401) {
+          logout("/login?session_expired=true");
+          return null;
+        }
+        return res.ok ? res.json() : null;
+      })
+      .then((data) => {
+        const u = data?.data?.user;
+        if (u) {
+          if (u.avatar) {
+            setUserAvatar(u.avatar);
+            setImgError(false);
+          }
+          if (u.name) setUserName(u.name);
+          if (u.email) setUserEmail(u.email);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const handleAvatarUpdated = (e: any) => {
+      if (e.detail) {
+        setUserAvatar(e.detail);
+        setImgError(false);
+      }
+    };
+    const handleProfileUpdated = (e: any) => {
+      if (e.detail?.name) setUserName(e.detail.name);
+      if (e.detail?.email) setUserEmail(e.detail.email);
+      if (e.detail?.avatar) {
+        setUserAvatar(e.detail.avatar);
+        setImgError(false);
+      }
+    };
+
+    window.addEventListener("avatar-updated", handleAvatarUpdated);
+    window.addEventListener("profile-updated", handleProfileUpdated);
+    return () => {
+      window.removeEventListener("avatar-updated", handleAvatarUpdated);
+      window.removeEventListener("profile-updated", handleProfileUpdated);
+    };
+  }, []);
 
   const isDetailPage =
     pathname.startsWith("/account/order/") ||
@@ -31,15 +100,24 @@ export default function LayoutProfile({
           <aside className="w-full md:w-64 flex-shrink-0 rounded-3xl bg-white p-6 border border-neutral-200/80 shadow-sm space-y-6">
             {/* User Profile Card */}
             <div className="flex items-center gap-3 pb-6 border-b border-neutral-100">
-              <div className="w-12 h-12 rounded-full bg-neutral-900 text-white flex items-center justify-center font-bold text-base uppercase shadow-sm">
-                {session?.user?.name?.[0] || "U"}
+              <div className="w-12 h-12 rounded-full overflow-hidden bg-neutral-900 text-white flex items-center justify-center font-bold text-base uppercase shadow-sm flex-shrink-0 ring-1 ring-neutral-200">
+                {userAvatar && !imgError ? (
+                  <img
+                    src={getImageUrl(userAvatar)}
+                    alt="User Avatar"
+                    onError={() => setImgError(true)}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  (userName || session?.user?.name || "U")[0]
+                )}
               </div>
               <div className="min-w-0">
                 <h3 className="font-semibold text-sm text-neutral-900 truncate">
-                  {session?.user?.name || "Cyber Customer"}
+                  {userName || session?.user?.name || "Cyber Customer"}
                 </h3>
                 <p className="text-[11px] text-neutral-400 truncate">
-                  {session?.user?.email}
+                  {userEmail || session?.user?.email}
                 </p>
               </div>
             </div>

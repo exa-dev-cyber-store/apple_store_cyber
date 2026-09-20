@@ -1,17 +1,29 @@
 "use client";
 
-import { signIn } from "next-auth/react";
+import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useEffect } from "react";
 import Image from "next/image";
 import { FcGoogle } from "react-icons/fc";
+import { SiApple } from "react-icons/si";
 import { FiArrowLeft } from "react-icons/fi";
 
 export default function Login() {
   const router = useRouter();
+  const { loginWithCredentials, loginWithGoogle, loginWithApple } = useAuth();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sessionExpiredNotice, setSessionExpiredNotice] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("session_expired") === "true") {
+        setSessionExpiredNotice(true);
+      }
+    }
+  }, []);
 
   const handleCredentialsSignIn = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -22,15 +34,11 @@ export default function Login() {
     const email = form.get("email") as string;
     const password = form.get("password") as string;
 
-    const response = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
+    const res = await loginWithCredentials({ email, password });
 
-    if (response?.error) {
+    if (!res.success) {
       setSubmitting(false);
-      setError("Invalid email address or password");
+      setError(res.error || "Invalid email address or password");
       return;
     }
 
@@ -39,8 +47,102 @@ export default function Login() {
   };
 
   const handleGoogleSignIn = () => {
+    setError(null);
+    if (typeof window === "undefined" || !(window as any).google?.accounts?.oauth2) {
+      setError("Google services are loading. Please click again in a moment.");
+      return;
+    }
+
+    const clientId =
+      process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
+      "897905079551-0bm5skv53tbcpqobtlkaatmfheftthc4.apps.googleusercontent.com";
+
     setSubmitting(true);
-    signIn("google", { callbackUrl: "/shop" });
+    const client = (window as any).google.accounts.oauth2.initCodeClient({
+      client_id: clientId,
+      scope: "openid email profile",
+      ux_mode: "popup",
+      callback: async (response: any) => {
+        if (response.code) {
+          try {
+            const res = await loginWithGoogle({ code: response.code });
+            if (res.success) {
+              router.push("/shop");
+              router.refresh();
+            } else {
+              setSubmitting(false);
+              setError(res.error || "Google sign in failed");
+            }
+          } catch (err: any) {
+            setSubmitting(false);
+            console.error("Google OAuth failed:", err);
+            setError(err?.message || "Google OAuth failed");
+          }
+        } else {
+          setSubmitting(false);
+        }
+      },
+      error_callback: () => {
+        setSubmitting(false);
+      },
+    });
+
+    client?.requestCode();
+  };
+
+  const handleAppleSignIn = async () => {
+    setError(null);
+    if (typeof window === "undefined" || !(window as any).AppleID?.auth) {
+      setError("Apple services are loading. Please click again in a moment.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const appleClientId =
+        process.env.NEXT_PUBLIC_APPLE_CLIENT_ID || "cloud.eka-dev.apple-store.service";
+      const redirectURI =
+        process.env.NEXT_PUBLIC_APPLE_REDIRECT_URI ||
+        "https://semilyrically-uniterative-zackary.ngrok-free.dev/api/auth/callback/apple";
+
+      (window as any).AppleID.auth.init({
+        clientId: appleClientId,
+        scope: "name email",
+        redirectURI,
+        usePopup: true,
+      });
+
+      const response = await (window as any).AppleID.auth.signIn();
+      if (response?.authorization?.id_token) {
+        let fullName: string | undefined;
+        if (response.user?.name) {
+          fullName = [response.user.name.firstName, response.user.name.lastName]
+            .filter(Boolean)
+            .join(" ");
+        }
+
+        const res = await loginWithApple({
+          identityToken: response.authorization.id_token,
+          email: response.user?.email,
+          name: fullName,
+        });
+
+        if (res.success) {
+          router.push("/shop");
+          router.refresh();
+        } else {
+          setSubmitting(false);
+          setError(res.error || "Apple sign in failed");
+        }
+      } else {
+        setSubmitting(false);
+      }
+    } catch (err: any) {
+      setSubmitting(false);
+      if (err?.error !== "popup_closed_by_user") {
+        setError(err?.error || err?.message || "Sign in with Apple was cancelled.");
+      }
+    }
   };
 
   return (
@@ -76,13 +178,23 @@ export default function Login() {
           </p>
         </div>
 
-        {/* Single NextAuth Google Sign In Button */}
-        <div>
+        {/* Social Sign In Buttons: Apple & Google */}
+        <div className="space-y-2.5">
+          <button
+            onClick={handleAppleSignIn}
+            type="button"
+            disabled={submitting}
+            className="w-full flex items-center justify-center gap-2.5 py-3 px-4 rounded-full bg-black hover:bg-neutral-900 text-white text-xs font-semibold transition-all duration-200 shadow-sm hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 cursor-pointer"
+          >
+            <SiApple className="text-base mb-0.5" />
+            <span>Sign in with Apple</span>
+          </button>
+
           <button
             onClick={handleGoogleSignIn}
             type="button"
             disabled={submitting}
-            className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-full border border-neutral-300 hover:bg-neutral-50 text-xs font-semibold text-neutral-700 transition-all duration-200 shadow-sm hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-full border border-neutral-300 hover:bg-neutral-50 text-xs font-semibold text-neutral-700 transition-all duration-200 shadow-sm hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 cursor-pointer"
           >
             <FcGoogle className="text-lg" />
             <span>Continue with Google</span>
@@ -95,6 +207,12 @@ export default function Login() {
             Or with email
           </span>
         </div>
+
+        {sessionExpiredNotice && (
+          <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-700 text-center font-medium">
+            Your session has expired or was revoked. Please sign in again.
+          </div>
+        )}
 
         {error && (
           <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-600 text-center font-medium">
@@ -122,6 +240,12 @@ export default function Login() {
               <label className="text-xs font-semibold text-neutral-700">
                 Password
               </label>
+              <Link
+                href="/forgot-password"
+                className="text-[11px] font-semibold text-blue-600 hover:underline"
+              >
+                Forgot password?
+              </Link>
             </div>
             <input
               type="password"
@@ -135,7 +259,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-3.5 rounded-full bg-neutral-900 hover:bg-black text-white text-xs font-semibold transition-all duration-200 shadow-md hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50"
+            className="w-full py-3.5 rounded-full bg-neutral-900 hover:bg-black text-white text-xs font-semibold transition-all duration-200 shadow-md hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50 cursor-pointer"
           >
             {submitting ? "Signing in..." : "Sign In"}
           </button>

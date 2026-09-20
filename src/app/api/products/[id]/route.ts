@@ -7,11 +7,11 @@ export async function GET(req: NextRequest, { params: { id } }: { params: { id: 
         });
         const data = await res.json();
         if (!res.ok || data.error) {
-            return NextResponse.error();
+            return NextResponse.json({ message: data.message || 'Product not found' }, { status: res.status || 404 });
         }
         const product = (data?.data && data?.success !== undefined) ? data.data : (data?._doc || data);
         return NextResponse.json({ data: product });
-    } catch (err) {
-        return NextResponse.error();
+    } catch (err: any) {
+        return NextResponse.json({ message: err.message || 'Failed to fetch product' }, { status: 500 });
     }
 }

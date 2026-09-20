@@ -157,8 +157,8 @@ export default function OrderPaymentPage({
         setPaymentCompleted(true);
         setPaymentExpired(false);
         toast.success(
-          "Pembayaran Terverifikasi",
-          "Pembayaran Anda berhasil diverifikasi! Mengalihkan ke invoice..."
+          "Payment Verified",
+          "Your payment has been successfully verified! Redirecting to invoice..."
         );
         setTimeout(() => {
           router.push(`/account/order/${orderId}`);
@@ -175,19 +175,19 @@ export default function OrderPaymentPage({
       ) {
         setPaymentExpired(true);
         toast.error(
-          "Pembayaran Kadaluarsa",
-          "Batas waktu pembayaran untuk pesanan ini telah habis (EXPIRED). Transaksi tidak dapat dilanjutkan."
+          "Payment Expired",
+          "The payment time limit for this order has expired. Transaction cannot be continued."
         );
       } else {
         toast.warning(
-          "Menunggu Pembayaran",
-          `Status pembayaran saat ini: ${statusVal.toUpperCase()}. Silakan selesaikan pembayaran Anda.`
+          "Awaiting Payment",
+          `Current payment status: ${statusVal.toUpperCase()}. Please complete your payment.`
         );
       }
     } catch {
       toast.error(
-        "Gagal Memeriksa Status",
-        "Tidak dapat memverifikasi status pembayaran saat ini. Silakan coba sesaat lagi."
+        "Verification Failed",
+        "Unable to verify payment status right now. Please try again shortly."
       );
     } finally {
       setCheckingStatus(false);
@@ -390,13 +390,13 @@ export default function OrderPaymentPage({
             </div>
             <div>
               <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-red-50 text-red-600 mb-2">
-                <FiClock /> Waktu Pembayaran Berakhir (Expired)
+                <FiClock /> Payment Expired
               </span>
               <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">
-                Pesanan Ini Tidak Dapat Dilanjutkan
+                This Order Cannot Be Processed
               </h1>
               <p className="text-xs text-neutral-500 mt-2 max-w-md mx-auto leading-relaxed">
-                Batas waktu pembayaran untuk order #{orderId.slice(-6)} telah habis (EXPIRED). Transaksi telah otomatis dibatalkan oleh sistem pembayaran sehingga instruksi pembayaran tidak berlaku lagi.
+                The payment time limit for order #{orderId.slice(-6)} has expired. The transaction was automatically cancelled and payment instructions are no longer valid.
               </p>
             </div>
             <div className="pt-2 flex flex-wrap justify-center gap-3">
@@ -404,13 +404,13 @@ export default function OrderPaymentPage({
                 href="/shop"
                 className="px-6 py-2.5 rounded-full bg-neutral-900 hover:bg-black text-white text-xs font-semibold shadow-sm transition-all"
               >
-                Mulai Belanja Baru
+                Start New Order
               </Link>
               <Link
                 href="/account/order"
                 className="px-6 py-2.5 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-800 text-xs font-medium transition-all"
               >
-                Lihat Riwayat Pesanan
+                View Order History
               </Link>
             </div>
           </div>
@@ -448,7 +448,7 @@ export default function OrderPaymentPage({
                       QRIS
                     </span>
                     <span className="text-xs text-neutral-500 font-medium">
-                      Standard Pembayaran Nasional
+                      National Payment Standard
                     </span>
                   </div>
 
@@ -463,20 +463,20 @@ export default function OrderPaymentPage({
                         />
                       </div>
                       <p className="text-xs text-neutral-600 max-w-sm mx-auto">
-                        Scan QR Code di atas menggunakan aplikasi e-wallet (GoPay, OVO, Dana, ShopeePay, LinkAja) atau Mobile Banking (BCA, Mandiri, BRI, BNI).
+                        Scan the QR code above using your mobile banking or digital wallet app (GoPay, OVO, Dana, ShopeePay, LinkAja, BCA, Mandiri, BRI, BNI).
                       </p>
                     </div>
                   ) : (
                     <div className="p-8 rounded-2xl bg-amber-50 border border-amber-200 text-center space-y-3">
                       <p className="text-xs font-semibold text-amber-900">
-                        QR Code QRIS sedang disiapkan atau periksa kembali status pembayaran Anda.
+                        QRIS code is being prepared or please check your payment status.
                       </p>
                       <button
                         onClick={handleManualCheck}
                         disabled={checkingStatus}
                         className="px-5 py-2 rounded-full bg-neutral-900 text-white text-xs font-semibold hover:bg-black transition-colors"
                       >
-                        {checkingStatus ? "Memeriksa..." : "Cek Status Pembayaran"}
+                        {checkingStatus ? "Checking..." : "Check Payment Status"}
                       </button>
                     </div>
                   )}
@@ -484,14 +484,14 @@ export default function OrderPaymentPage({
                   {/* QRIS Step Guide */}
                   <div className="p-4 rounded-2xl bg-neutral-50 border border-neutral-200/80 text-left text-xs text-neutral-600 space-y-2">
                     <p className="font-bold text-neutral-900 uppercase text-[11px] tracking-wider">
-                      Cara Pembayaran QRIS:
+                      How to Pay with QRIS:
                     </p>
                     <ol className="list-decimal list-inside space-y-1 text-neutral-600">
-                      <li>Buka aplikasi Mobile Banking atau E-Wallet Anda</li>
-                      <li>Pilih menu <strong>Bayar</strong> atau ikon <strong>QRIS</strong></li>
-                      <li>Arahkan kamera ke QR Code di atas</li>
-                      <li>Periksa nama merchant: <strong>Cyber Store / Midtrans</strong></li>
-                      <li>Konfirmasi dan masukkan PIN Anda</li>
+                      <li>Open your Mobile Banking or Digital Wallet application</li>
+                      <li>Select the <strong>Pay</strong> or <strong>QRIS</strong> menu</li>
+                      <li>Point your camera at the QR code above</li>
+                      <li>Verify merchant name: <strong>Cyber Store / Midtrans</strong></li>
+                      <li>Confirm amount and enter your security PIN</li>
                     </ol>
                   </div>
                 </div>
@@ -505,7 +505,7 @@ export default function OrderPaymentPage({
                       {details.bank} Virtual Account
                     </span>
                     <p className="text-xs text-neutral-500">
-                      Nomor Rekening Virtual Account:
+                      Virtual Account Number:
                     </p>
                     <p className="text-2xl sm:text-3xl font-mono font-extrabold tracking-wider text-neutral-900 select-all">
                       {details.vaNumber}
@@ -515,21 +515,21 @@ export default function OrderPaymentPage({
                       className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-neutral-900 hover:bg-black text-white text-xs font-semibold transition-all shadow-sm mt-1"
                     >
                       {copiedField === "va" ? <FiCheck /> : <FiCopy />}
-                      <span>{copiedField === "va" ? "Nomor VA Tersalin!" : "Salin Nomor VA"}</span>
+                      <span>{copiedField === "va" ? "VA Number Copied!" : "Copy VA Number"}</span>
                     </button>
                   </div>
 
                   {/* Step instructions */}
                   <div className="p-4 rounded-2xl bg-neutral-50 border border-neutral-200/80 text-xs text-neutral-600 space-y-2">
                     <p className="font-bold text-neutral-900 uppercase text-[11px] tracking-wider">
-                      Panduan Transfer {details.bank} VA:
+                      {details.bank} VA Transfer Instructions:
                     </p>
                     <ol className="list-decimal list-inside space-y-1 text-neutral-600">
-                      <li>Buka Mobile Banking atau ATM {details.bank} Anda</li>
-                      <li>Pilih menu <strong>Transfer &rarr; Virtual Account</strong></li>
-                      <li>Masukkan Nomor VA: <strong>{details.vaNumber}</strong></li>
-                      <li>Pastikan nominal transfer sesuai: <strong>{formatRupiah(totalAmount)}</strong></li>
-                      <li>Selesaikan pembayaran dan simpan bukti transfer</li>
+                      <li>Open your {details.bank} Mobile Banking or ATM</li>
+                      <li>Select <strong>Transfer &rarr; Virtual Account</strong></li>
+                      <li>Enter VA Number: <strong>{details.vaNumber}</strong></li>
+                      <li>Ensure transfer amount matches: <strong>{formatRupiah(totalAmount)}</strong></li>
+                      <li>Complete payment and save transfer receipt</li>
                     </ol>
                   </div>
                 </div>
@@ -541,7 +541,7 @@ export default function OrderPaymentPage({
                   <div className="space-y-3">
                     <div className="p-4 rounded-2xl bg-neutral-50 border border-neutral-200/80 flex justify-between items-center text-xs">
                       <div>
-                        <span className="text-neutral-500 block">Kode Perusahaan (Biller Code)</span>
+                        <span className="text-neutral-500 block">Company Code (Biller Code)</span>
                         <span className="font-mono font-bold text-neutral-900 text-lg">
                           {details.billerCode}
                         </span>
@@ -550,13 +550,13 @@ export default function OrderPaymentPage({
                         onClick={() => copyToClipboard(details.billerCode, "biller")}
                         className="px-4 py-1.5 rounded-full bg-neutral-200 hover:bg-neutral-300 text-neutral-800 text-xs font-semibold transition-colors"
                       >
-                        {copiedField === "biller" ? "Tersalin!" : "Salin"}
+                        {copiedField === "biller" ? "Copied!" : "Copy"}
                       </button>
                     </div>
 
                     <div className="p-4 rounded-2xl bg-neutral-50 border border-neutral-200/80 flex justify-between items-center text-xs">
                       <div>
-                        <span className="text-neutral-500 block">Kode Pembayaran (Bill Key)</span>
+                        <span className="text-neutral-500 block">Payment Code (Bill Key)</span>
                         <span className="font-mono font-bold text-neutral-900 text-lg">
                           {details.billKey}
                         </span>
@@ -565,21 +565,21 @@ export default function OrderPaymentPage({
                         onClick={() => copyToClipboard(details.billKey, "billkey")}
                         className="px-4 py-1.5 rounded-full bg-neutral-200 hover:bg-neutral-300 text-neutral-800 text-xs font-semibold transition-colors"
                       >
-                        {copiedField === "billkey" ? "Tersalin!" : "Salin"}
+                        {copiedField === "billkey" ? "Copied!" : "Copy"}
                       </button>
                     </div>
                   </div>
 
                   <div className="p-4 rounded-2xl bg-neutral-50 border border-neutral-200/80 text-xs text-neutral-600 space-y-2">
                     <p className="font-bold text-neutral-900 uppercase text-[11px] tracking-wider">
-                      Panduan Bayar Mandiri Bill:
+                      Mandiri Bill Payment Instructions:
                     </p>
                     <ol className="list-decimal list-inside space-y-1 text-neutral-600">
-                      <li>Buka aplikasi Livin&apos; by Mandiri atau ATM Mandiri</li>
-                      <li>Pilih menu <strong>Bayar &rarr; Pembayaran Baru &rarr; Multi Payment</strong></li>
-                      <li>Pilih penyedia jasa: <strong>Midtrans (70012)</strong></li>
-                      <li>Masukkan No. Pelanggan / Bill Key: <strong>{details.billKey}</strong></li>
-                      <li>Konfirmasi pembayaran Anda</li>
+                      <li>Open Livin&apos; by Mandiri app or Mandiri ATM</li>
+                      <li>Select <strong>Pay &rarr; New Payment &rarr; Multi Payment</strong></li>
+                      <li>Select service provider: <strong>Midtrans (70012)</strong></li>
+                      <li>Enter Bill Key / Customer Number: <strong>{details.billKey}</strong></li>
+                      <li>Confirm payment details and finalize</li>
                     </ol>
                   </div>
                 </div>
@@ -606,7 +606,7 @@ export default function OrderPaymentPage({
                         rel="noopener noreferrer"
                         className="inline-flex items-center justify-center gap-2 w-full py-3.5 px-6 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition-all shadow-md"
                       >
-                        <span>Buka Aplikasi GoPay untuk Membayar</span>
+                        <span>Open GoPay App to Pay</span>
                         <FiExternalLink />
                       </a>
                     </div>
@@ -619,10 +619,10 @@ export default function OrderPaymentPage({
                 <div className="space-y-6 text-center">
                   <div className="p-6 rounded-3xl bg-neutral-50 border border-neutral-200/80 space-y-3">
                     <span className="inline-block px-3 py-1 rounded-full bg-neutral-900 text-white text-xs font-bold uppercase tracking-wider">
-                      Gerai {details.store}
+                      {details.store} Retail Outlet
                     </span>
                     <p className="text-xs text-neutral-500">
-                      Tunjukkan Kode Pembayaran Ini ke Kasir:
+                      Show this payment code to the cashier:
                     </p>
                     <p className="text-3xl font-mono font-extrabold tracking-wider text-neutral-900 select-all">
                       {details.paymentCode}
@@ -632,7 +632,7 @@ export default function OrderPaymentPage({
                       className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-neutral-900 hover:bg-black text-white text-xs font-semibold transition-all shadow-sm"
                     >
                       {copiedField === "cstore" ? <FiCheck /> : <FiCopy />}
-                      <span>{copiedField === "cstore" ? "Kode Tersalin!" : "Salin Kode"}</span>
+                      <span>{copiedField === "cstore" ? "Code Copied!" : "Copy Code"}</span>
                     </button>
                   </div>
                 </div>
@@ -645,7 +645,7 @@ export default function OrderPaymentPage({
                     Midtrans Payment Gateway
                   </p>
                   <p className="text-xs text-neutral-600 max-w-sm mx-auto">
-                    Klik tombol di bawah ini untuk membuka popup pembayaran resmi Midtrans.
+                    Click the button below to open the official Midtrans payment window.
                   </p>
                   <button
                     onClick={() => {
@@ -664,7 +664,7 @@ export default function OrderPaymentPage({
                     }}
                     className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-neutral-900 hover:bg-black text-white text-xs font-semibold transition-all shadow-md"
                   >
-                    <FiCreditCard /> Buka Popup Pembayaran Midtrans <FiExternalLink />
+                    <FiCreditCard /> Open Midtrans Payment Window <FiExternalLink />
                   </button>
                 </div>
               )}
@@ -673,7 +673,7 @@ export default function OrderPaymentPage({
               {details.type === "generic" && (
                 <div className="p-6 rounded-3xl bg-neutral-50 border border-neutral-200/80 text-center space-y-2">
                   <p className="text-xs text-neutral-500 font-medium">
-                    Referensi Pembayaran
+                    Payment Reference
                   </p>
                   <p className="text-sm font-mono font-bold text-neutral-900">
                     {details.id}
@@ -686,14 +686,14 @@ export default function OrderPaymentPage({
 
               {/* Total Amount Due */}
               <div className="flex justify-between items-baseline pt-4 border-t border-neutral-200 text-xs">
-                <span className="text-neutral-500">Total Tagihan Pembayaran:</span>
+                <span className="text-neutral-500">Total Payment Due:</span>
                 <div className="flex items-center gap-2">
                   <span className="text-xl sm:text-2xl font-extrabold text-neutral-900">
                     {formatRupiah(totalAmount)}
                   </span>
                   <button
                     onClick={() => copyToClipboard(String(totalAmount), "total")}
-                    title="Salin nominal total"
+                    title="Copy total amount"
                     className="p-1.5 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-neutral-600 transition-colors"
                   >
                     {copiedField === "total" ? <FiCheck className="text-emerald-600" /> : <FiCopy />}
@@ -710,7 +710,7 @@ export default function OrderPaymentPage({
                 >
                   <FiRefreshCw className={checkingStatus ? "animate-spin" : ""} />
                   <span>
-                    {checkingStatus ? "Memeriksa Status Pembayaran..." : "Cek Status Pembayaran"}
+                    {checkingStatus ? "Checking Payment Status..." : "Check Payment Status"}
                   </span>
                 </button>
 
@@ -719,7 +719,7 @@ export default function OrderPaymentPage({
                     href={`/account/order/${orderId}`}
                     className="w-full block py-2.5 px-4 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-800 text-xs font-semibold text-center transition-colors"
                   >
-                    Lihat Invoice
+                    View Invoice
                   </Link>
                 </div>
               </div>
@@ -731,7 +731,7 @@ export default function OrderPaymentPage({
               <div className="rounded-3xl bg-white p-6 border border-neutral-200/80 shadow-sm space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
                   <h3 className="text-sm font-bold text-neutral-900">
-                    Rincian Pesanan ({items.length} Produk)
+                    Order Summary ({items.length} {items.length === 1 ? "Item" : "Items"})
                   </h3>
                   <span className="text-[11px] font-mono text-neutral-400">
                     #{orderId.slice(-6)}
@@ -790,23 +790,23 @@ export default function OrderPaymentPage({
                 {/* Subtotals breakdown */}
                 <div className="pt-3 border-t border-neutral-100 space-y-1.5 text-xs text-neutral-600">
                   <div className="flex justify-between">
-                    <span>Ongkos Kirim</span>
-                    <span>{order.shipping === 0 ? "GRATIS" : formatRupiah(order.shipping || 0)}</span>
+                    <span>Shipping Fee</span>
+                    <span>{order.shipping === 0 ? "FREE" : formatRupiah(order.shipping || 0)}</span>
                   </div>
                   {order.tax > 0 && (
                     <div className="flex justify-between">
-                      <span>Pajak (5%)</span>
+                      <span>Tax (5%)</span>
                       <span>{formatRupiah(order.tax)}</span>
                     </div>
                   )}
                   {order.discount > 0 && (
                     <div className="flex justify-between text-emerald-600 font-semibold">
-                      <span>Diskon</span>
+                      <span>Discount</span>
                       <span>-{formatRupiah(order.discount)}</span>
                     </div>
                   )}
                   <div className="flex justify-between items-baseline pt-2 border-t border-neutral-200 font-bold text-neutral-900 text-sm">
-                    <span>Total Pembayaran</span>
+                    <span>Total Payment</span>
                     <span className="text-base font-extrabold text-neutral-900">
                       {formatRupiah(totalAmount)}
                     </span>
@@ -818,7 +818,7 @@ export default function OrderPaymentPage({
               {order.delivery_address && (
                 <div className="rounded-3xl bg-white p-6 border border-neutral-200/80 shadow-sm space-y-2 text-xs">
                   <h4 className="font-bold text-neutral-900 uppercase text-[11px] tracking-wider">
-                    Alamat Pengiriman
+                    Delivery Address
                   </h4>
                   <p className="font-semibold text-neutral-800">
                     {order.delivery_address.name}
@@ -835,7 +835,7 @@ export default function OrderPaymentPage({
               <div className="p-4 rounded-2xl bg-neutral-50 border border-neutral-200/60 flex items-center gap-3 text-[11px] text-neutral-500">
                 <FiShield className="text-neutral-400 text-lg shrink-0" />
                 <span>
-                  Transaksi Anda dilindungi dengan enkripsi 256-bit SSL dan diproses langsung oleh Midtrans Payment Gateway.
+                  Your transaction is protected by 256-bit SSL encryption and processed securely by Midtrans Payment Gateway.
                 </span>
               </div>
             </div>

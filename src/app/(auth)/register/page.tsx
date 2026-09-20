@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import Image from "next/image";
+import { useAuth } from "@/context/AuthContext";
+import { FcGoogle } from "react-icons/fc";
 import { SiApple } from "react-icons/si";
 import { FiArrowLeft } from "react-icons/fi";
 
@@ -13,6 +15,7 @@ export default function Register() {
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [submitting, setSubmitting] = useState<boolean>(false);
   const router = useRouter();
+  const { loginWithGoogle, loginWithApple } = useAuth();
 
   const handleRegister = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -64,6 +67,105 @@ export default function Register() {
     }
   };
 
+  const handleGoogleSignUp = () => {
+    setErrorMessage("");
+    if (typeof window === "undefined" || !(window as any).google?.accounts?.oauth2) {
+      setErrorMessage("Google services are loading. Please click again in a moment.");
+      return;
+    }
+
+    const clientId =
+      process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
+      "897905079551-0bm5skv53tbcpqobtlkaatmfheftthc4.apps.googleusercontent.com";
+
+    setSubmitting(true);
+    const client = (window as any).google.accounts.oauth2.initCodeClient({
+      client_id: clientId,
+      scope: "openid email profile",
+      ux_mode: "popup",
+      callback: async (response: any) => {
+        if (response.code) {
+          try {
+            const res = await loginWithGoogle({ code: response.code });
+            if (res.success) {
+              router.push("/shop");
+              router.refresh();
+            } else {
+              setSubmitting(false);
+              setErrorMessage(res.error || "Google sign up failed");
+            }
+          } catch (err: any) {
+            setSubmitting(false);
+            console.error("Google OAuth failed:", err);
+            setErrorMessage(err?.message || "Google OAuth failed");
+          }
+        } else {
+          setSubmitting(false);
+        }
+      },
+      error_callback: () => {
+        setSubmitting(false);
+      },
+    });
+
+    client?.requestCode();
+  };
+
+  const handleAppleSignUp = async () => {
+    setErrorMessage("");
+    if (typeof window === "undefined" || !(window as any).AppleID?.auth) {
+      setErrorMessage("Apple services are loading. Please click again in a moment.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const appleClientId =
+        process.env.NEXT_PUBLIC_APPLE_CLIENT_ID || "cloud.eka-dev.apple-store.service";
+      const redirectURI =
+        process.env.NEXT_PUBLIC_APPLE_REDIRECT_URI ||
+        "https://semilyrically-uniterative-zackary.ngrok-free.dev/api/auth/callback/apple";
+
+      (window as any).AppleID.auth.init({
+        clientId: appleClientId,
+        scope: "name email",
+        redirectURI,
+        usePopup: true,
+      });
+
+      const response = await (window as any).AppleID.auth.signIn();
+      if (response?.authorization?.id_token) {
+        let fullName: string | undefined;
+        if (response.user?.name) {
+          fullName = [response.user.name.firstName, response.user.name.lastName]
+            .filter(Boolean)
+            .join(" ");
+        }
+
+        const res = await loginWithApple({
+          identityToken: response.authorization.id_token,
+          email: response.user?.email,
+          name: fullName,
+        });
+
+        if (res.success) {
+          router.push("/shop");
+          router.refresh();
+        } else {
+          setSubmitting(false);
+          setErrorMessage(res.error || "Apple sign up failed");
+        }
+      } else {
+        setSubmitting(false);
+      }
+    } catch (err: any) {
+      setSubmitting(false);
+      if (err?.error !== "popup_closed_by_user") {
+        setErrorMessage(err?.error || err?.message || "Sign up with Apple was cancelled.");
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#fbfbfd]">
       <div className="w-full max-w-md bg-white rounded-3xl p-8 sm:p-10 border border-neutral-200/80 shadow-xl space-y-6">
@@ -101,6 +203,37 @@ export default function Register() {
           </div>
         )}
 
+        {/* Social Sign Up Buttons */}
+        <div className="space-y-2.5">
+          <button
+            onClick={handleAppleSignUp}
+            type="button"
+            disabled={submitting}
+            className="w-full flex items-center justify-center gap-2.5 py-3 px-4 rounded-full bg-black hover:bg-neutral-900 text-white text-xs font-semibold transition-all duration-200 shadow-sm hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 cursor-pointer"
+          >
+            <SiApple className="text-base mb-0.5" />
+            <span>Sign up with Apple</span>
+          </button>
+
+          <button
+            onClick={handleGoogleSignUp}
+            type="button"
+            disabled={submitting}
+            className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-full border border-neutral-300 hover:bg-neutral-50 text-xs font-semibold text-neutral-700 transition-all duration-200 shadow-sm hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 cursor-pointer"
+          >
+            <FcGoogle className="text-lg" />
+            <span>Continue with Google</span>
+          </button>
+        </div>
+
+        <div className="relative flex items-center justify-center">
+          <div className="border-t border-neutral-200 w-full" />
+          <span className="bg-white px-3 text-[11px] text-neutral-400 uppercase tracking-wider absolute">
+            Or create with email
+          </span>
+        </div>
+
+        {/* Registration Form */}
         <form onSubmit={handleRegister} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-neutral-700 mb-1.5">
@@ -110,7 +243,7 @@ export default function Register() {
               type="text"
               name="name"
               required
-              placeholder="e.g. Steve Jobs"
+              placeholder="Steve Jobs"
               className="w-full text-xs px-4 py-3 rounded-xl border border-neutral-300 outline-none focus:border-neutral-900 transition-colors"
             />
           </div>
@@ -136,7 +269,7 @@ export default function Register() {
               type="password"
               name="password"
               required
-              placeholder="Minimum 6 characters"
+              placeholder="••••••••"
               className="w-full text-xs px-4 py-3 rounded-xl border border-neutral-300 outline-none focus:border-neutral-900 transition-colors"
             />
           </div>
@@ -149,7 +282,7 @@ export default function Register() {
               type="password"
               name="confirmPassword"
               required
-              placeholder="Re-enter password"
+              placeholder="••••••••"
               className="w-full text-xs px-4 py-3 rounded-xl border border-neutral-300 outline-none focus:border-neutral-900 transition-colors"
             />
           </div>
@@ -157,20 +290,20 @@ export default function Register() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-3.5 rounded-full bg-neutral-900 hover:bg-black text-white text-xs font-semibold transition-all duration-200 shadow-md hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50"
+            className="w-full py-3.5 rounded-full bg-neutral-900 hover:bg-black text-white text-xs font-semibold transition-all duration-200 shadow-md hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50 cursor-pointer"
           >
-            {submitting ? "Creating account..." : "Continue"}
+            {submitting ? "Creating Account..." : "Create Cyber ID"}
           </button>
         </form>
 
         <div className="text-center pt-2">
           <p className="text-xs text-neutral-500">
-            Already have an Apple ID?{" "}
+            Already have a Cyber ID?{" "}
             <Link
               href="/login"
               className="font-semibold text-blue-600 hover:underline"
             >
-              Sign In
+              Sign in
             </Link>
           </p>
         </div>

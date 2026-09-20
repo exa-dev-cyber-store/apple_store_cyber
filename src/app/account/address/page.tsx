@@ -43,9 +43,9 @@ export default function AddressPage() {
 
   function confirmDelete(id: string, name: string) {
     toast.alert({
-      title: "Hapus Alamat Pengiriman?",
-      message: `Apakah Anda yakin ingin menghapus alamat "${name}"? Tindakan ini tidak dapat dibatalkan.`,
-      confirmText: "Hapus Alamat",
+      title: "Delete Shipping Address?",
+      message: `Are you sure you want to delete the shipping address "${name}"? This action cannot be undone.`,
+      confirmText: "Delete Address",
       type: "warning",
       onConfirm: () => executeDelete(id),
     });
@@ -57,13 +57,13 @@ export default function AddressPage() {
       await axios.delete(`/api/delivery-address/${id}`);
       setAddress((prev) => prev.filter((item) => item._id !== id));
       toast.success(
-        "Alamat Terhapus",
-        "Alamat pengiriman telah berhasil dihapus dari akun Anda."
+        "Address Deleted",
+        "Shipping address has been successfully deleted from your account."
       );
     } catch {
       toast.error(
-        "Gagal Menghapus",
-        "Terjadi kendala saat menghapus alamat. Silakan coba kembali."
+        "Failed to Delete",
+        "An error occurred while deleting the address. Please try again."
       );
     } finally {
       setDeletingId(null);
@@ -80,10 +80,10 @@ export default function AddressPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-neutral-200">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
-            Daftar Alamat Pengiriman
+            Shipping Addresses
           </h1>
           <p className="text-xs text-neutral-500 mt-1">
-            Kelola alamat tujuan untuk pengiriman pesanan Apple Anda
+            Manage your delivery addresses for seamless checkout
           </p>
         </div>
         <Link
@@ -91,7 +91,7 @@ export default function AddressPage() {
           className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-neutral-900 hover:bg-black text-white text-xs font-semibold shadow-sm transition-all hover:scale-[1.02] active:scale-95 shrink-0"
         >
           <FiPlus className="text-sm" />
-          <span>Tambah Alamat Baru</span>
+          <span>Add New Address</span>
         </Link>
       </div>
 
@@ -103,10 +103,10 @@ export default function AddressPage() {
           </div>
           <div>
             <h3 className="text-base font-bold text-neutral-900">
-              Belum Ada Alamat Tersimpan
+              No Saved Addresses Yet
             </h3>
             <p className="text-xs text-neutral-500 mt-1.5 leading-relaxed">
-              Tambahkan alamat pertama Anda untuk mempermudah dan mempercepat proses checkout pesanan di Cyber Store.
+              Add your first shipping address to speed up your checkout experience at Cyber Store.
             </p>
           </div>
           <div className="pt-2">
@@ -114,7 +114,7 @@ export default function AddressPage() {
               href="/account/address/create-alamat"
               className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-neutral-900 hover:bg-black text-white text-xs font-semibold shadow-sm transition-all"
             >
-              <FiPlus /> Tambah Alamat Sekarang
+              <FiPlus /> Add Address Now
             </Link>
           </div>
         </div>
@@ -138,26 +138,26 @@ export default function AddressPage() {
                         {data.name}
                       </h3>
                       <span className="text-[10px] font-mono text-neutral-400">
-                        Alamat #{idx + 1}
+                        Address #{idx + 1}
                       </span>
                     </div>
                   </div>
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-neutral-100 text-neutral-600">
-                    <FiMapPin className="text-[10px]" /> Tersimpan
+                    <FiMapPin className="text-[10px]" /> Saved
                   </span>
                 </div>
 
                 {/* Address Body */}
                 <div className="space-y-1.5 pt-1 text-xs text-neutral-600 leading-relaxed">
                   <p className="font-semibold text-neutral-800">
-                    Desa/Kel. {data.kelurahan}, Kec. {data.kecamatan}
+                    {data.kelurahan}, {data.kecamatan}
                   </p>
                   <p className="text-neutral-500">
-                    {data.kabupaten}, Provinsi {data.provinsi}
+                    {data.kabupaten}, {data.provinsi}
                   </p>
                   <div className="p-3 rounded-2xl bg-neutral-50 border border-neutral-100 text-neutral-700 text-[11px] font-medium mt-2">
                     <span className="text-neutral-400 block text-[10px] uppercase font-bold tracking-wider mb-0.5">
-                      Detail Patokan:
+                      Landmark / Details:
                     </span>
                     {data.detail}
                   </div>
@@ -171,7 +171,7 @@ export default function AddressPage() {
                   className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-full border border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50 text-neutral-700 text-xs font-semibold transition-colors shadow-sm"
                 >
                   <FiEdit2 className="text-xs" />
-                  <span>Edit Alamat</span>
+                  <span>Edit Address</span>
                 </Link>
                 <button
                   onClick={() => confirmDelete(data._id, data.name)}
@@ -179,7 +179,7 @@ export default function AddressPage() {
                   className="inline-flex items-center justify-center gap-1.5 py-2 px-4 rounded-full bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold transition-colors disabled:opacity-50"
                 >
                   <FiTrash2 className="text-xs" />
-                  <span>{deletingId === data._id ? "Menghapus..." : "Hapus"}</span>
+                  <span>{deletingId === data._id ? "Deleting..." : "Delete"}</span>
                 </button>
               </div>
             </div>

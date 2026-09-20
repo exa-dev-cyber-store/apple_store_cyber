@@ -8,7 +8,7 @@ import AnotherProducts from "@/components/shop/AnotherProducts";
 import Loading from "./loading";
 import Link from "next/link";
 import ReviewSec from "@/components/shop/ReviewSec";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { CartProvider } from "@/context";
@@ -28,7 +28,7 @@ export default function Detail({ params: { products } }: { params: { products: s
 
   const cartContext = useContext(CartProvider);
   const router = useRouter();
-  const { status } = useSession();
+  const { status } = useAuth();
   const cart = cartContext?.cart || [];
   const setCart = cartContext?.setCart;
 

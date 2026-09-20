@@ -7,7 +7,7 @@ import { IoHeartOutline, IoHeart } from "react-icons/io5";
 import React, { useContext, useEffect, useState } from "react";
 import Link from "next/link";
 import axios from "axios";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { CartProvider } from "@/context";
 import { HiOutlineShoppingBag, HiCheck } from "react-icons/hi2";
@@ -27,7 +27,7 @@ export default function CardShop({
 }: CardShopProps) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [addedAnim, setAddedAnim] = useState(false);
-  const { status } = useSession();
+  const { status } = useAuth();
   const router = useRouter();
   const cartContext = useContext(CartProvider);
   const cart = cartContext?.cart || [];

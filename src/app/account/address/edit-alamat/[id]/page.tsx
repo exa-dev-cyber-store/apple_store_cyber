@@ -184,16 +184,16 @@ export default function EditAddress({
       .put(`/api/delivery-address/${id}`, payload)
       .then(() => {
         toast.success(
-          "Alamat Diperbarui",
-          "Perubahan alamat pengiriman telah berhasil disimpan."
+          "Address Updated",
+          "Shipping address changes have been successfully saved."
         );
         router.push("/account/address");
       })
       .catch((err) => {
         console.error(err);
         toast.error(
-          "Gagal Memperbarui",
-          "Tidak dapat memperbarui alamat. Silakan coba sesaat lagi."
+          "Update Failed",
+          "Unable to update address. Please try again."
         );
       })
       .finally(() => {
@@ -217,7 +217,7 @@ export default function EditAddress({
           href="/account/address"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-600 hover:text-black transition-colors"
         >
-          <FiArrowLeft /> Kembali ke Daftar Alamat
+          <FiArrowLeft /> Back to Addresses
         </Link>
       </div>
 
@@ -226,27 +226,27 @@ export default function EditAddress({
         {/* Header */}
         <div className="pb-6 border-b border-neutral-100">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-neutral-100 text-neutral-700 mb-2">
-            <FiEdit2 /> Perbarui Alamat
+            <FiEdit2 /> Update Address
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
-            Edit Alamat Pengiriman
+            Edit Shipping Address
           </h1>
           <p className="text-xs text-neutral-500 mt-1">
-            Ubah data penerima atau rincian lokasi pengiriman pesanan Anda
+            Update recipient details or delivery location information
           </p>
         </div>
 
         {/* Current Address Preview Card */}
         <div className="p-4 sm:p-5 rounded-2xl bg-neutral-50 border border-neutral-200/70 space-y-1.5 text-xs">
           <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
-            <FiMapPin /> Alamat Saat Ini Terdaftar
+            <FiMapPin /> Currently Saved Address
           </span>
           <p className="font-semibold text-neutral-800">
             {prevAddress.name} &bull; {prevAddress.detail}
           </p>
           <p className="text-neutral-500">
-            Desa/Kel. {prevAddress.kelurahan}, Kec. {prevAddress.kecamatan},{" "}
-            {prevAddress.kabupaten}, Prov. {prevAddress.provinsi}
+            {prevAddress.kelurahan}, {prevAddress.kecamatan},{" "}
+            {prevAddress.kabupaten}, {prevAddress.provinsi}
           </p>
         </div>
 
@@ -254,16 +254,16 @@ export default function EditAddress({
           {/* Section 1: Penerima */}
           <div className="space-y-4">
             <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
-              Informasi Penerima
+              Recipient Information
             </h3>
             <div className="space-y-1.5">
               <label className="block text-xs font-semibold text-neutral-700">
-                Nama Lengkap Penerima
+                Recipient Full Name
               </label>
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="Nama Lengkap"
+                  placeholder="Full Name"
                   name="name"
                   defaultValue={prevAddress.name}
                   className={`w-full rounded-2xl border px-4 py-3 text-xs font-medium outline-none transition-all pl-10 ${
@@ -280,7 +280,7 @@ export default function EditAddress({
               {error.name && (
                 <div className="flex items-center gap-1 text-[11px] text-red-500 font-medium pt-0.5">
                   <FiAlertCircle className="shrink-0" />
-                  <span>Nama harus minimal 3 karakter</span>
+                  <span>Name must be at least 3 characters</span>
                 </div>
               )}
             </div>
@@ -290,37 +290,37 @@ export default function EditAddress({
           <div className="space-y-4 pt-4 border-t border-neutral-100">
             <div className="flex items-baseline justify-between">
               <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
-                Ubah Wilayah Administratif
+                Update Delivery Region
               </h3>
               <span className="text-[11px] text-neutral-400">
-                (Kosongkan jika tetap sama)
+                (Leave empty to keep unchanged)
               </span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Select
                 name="provinsi"
-                label="Provinsi"
+                label="Province"
                 handleName={handleName}
                 handleSelect={handleSelect}
                 options={data.provinsi}
               />
               <Select
                 name="kabupaten"
-                label="Kota / Kabupaten"
+                label="City / Regency"
                 handleName={handleName}
                 handleSelect={handleSelect}
                 options={data.kabupaten}
               />
               <Select
                 name="kecamatan"
-                label="Kecamatan"
+                label="District"
                 handleName={handleName}
                 handleSelect={handleSelect}
                 options={data.kecamatan}
               />
               <Select
                 name="kelurahan"
-                label="Desa / Kelurahan"
+                label="Sub-district / Village"
                 handleName={handleName}
                 handleSelect={handleSelect}
                 options={data.kelurahan}
@@ -331,13 +331,13 @@ export default function EditAddress({
           {/* Section 3: Detail Alamat */}
           <div className="space-y-4 pt-4 border-t border-neutral-100">
             <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
-              Alamat Lengkap & Patokan
+              Street Address & Landmarks
             </h3>
             <TextArea
-              label="Alamat Detail"
+              label="Street Address"
               name="detail"
               value={prevAddress.detail}
-              error={error.detail ? "Detail alamat wajib diisi minimal 3 karakter" : undefined}
+              error={error.detail ? "Address details must be at least 3 characters" : undefined}
             />
           </div>
 
@@ -347,7 +347,7 @@ export default function EditAddress({
               href="/account/address"
               className="py-3 px-6 rounded-full border border-neutral-200 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors shadow-sm"
             >
-              Batal
+              Cancel
             </Link>
             <button
               disabled={submit}
@@ -357,7 +357,7 @@ export default function EditAddress({
               }`}
             >
               <FiCheck className="text-sm" />
-              <span>{submit ? "Menyimpan Perubahan..." : "Simpan Perubahan"}</span>
+              <span>{submit ? "Saving Changes..." : "Save Changes"}</span>
             </button>
           </div>
         </form>

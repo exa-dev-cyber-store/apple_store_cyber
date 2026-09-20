@@ -120,8 +120,8 @@ export default function OrderInvoicePage({
       navigator.clipboard.writeText(invNum);
       setCopied(true);
       toast.success(
-        "Nomor Faktur Disalin",
-        `Nomor faktur ${invNum} berhasil disalin ke clipboard.`
+        "Invoice Number Copied",
+        `Invoice number ${invNum} copied to clipboard.`
       );
       setTimeout(() => setCopied(false), 2500);
     }
@@ -142,17 +142,17 @@ export default function OrderInvoicePage({
           <FiAlertTriangle />
         </div>
         <h2 className="text-xl font-bold text-neutral-800">
-          Faktur Tidak Ditemukan
+          Invoice Not Found
         </h2>
         <p className="text-xs text-neutral-500">
-          Tidak dapat menemukan data faktur untuk nomor referensi: {invoice}
+          Unable to find invoice data for reference number: {invoice}
         </p>
         <div className="pt-2">
           <Link
             href="/account/order"
             className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-neutral-900 text-white text-xs font-semibold hover:bg-black transition-colors"
           >
-            <FiArrowLeft /> Kembali ke Riwayat Pesanan
+            <FiArrowLeft /> Back to Order History
           </Link>
         </div>
       </div>
@@ -182,13 +182,13 @@ export default function OrderInvoicePage({
   const orderRefNumber = `ORD-${(data.order?._id || invoice).slice(-8).toUpperCase()}`;
 
   const createdDate = new Date(data.createdAt || Date.now());
-  const formattedDate = createdDate.toLocaleDateString("id-ID", {
+  const formattedDate = createdDate.toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
     month: "long",
     day: "numeric",
   });
-  const formattedTime = createdDate.toLocaleTimeString("id-ID", {
+  const formattedTime = createdDate.toLocaleTimeString("en-US", {
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -205,14 +205,14 @@ export default function OrderInvoicePage({
   let paymentMethodDisplay = "Midtrans Online Payment";
   if (data.payment_method) {
     const pm = data.payment_method.toLowerCase();
-    if (pm.includes("qris")) paymentMethodDisplay = "QRIS (GoPay/OVO/ShopeePay/BCA Mobile)";
+    if (pm.includes("qris")) paymentMethodDisplay = "QRIS (GoPay / OVO / ShopeePay / BCA)";
     else if (pm.includes("bca")) paymentMethodDisplay = "BCA Virtual Account";
     else if (pm.includes("bni")) paymentMethodDisplay = "BNI Virtual Account";
     else if (pm.includes("bri")) paymentMethodDisplay = "BRI Virtual Account";
     else if (pm.includes("mandiri")) paymentMethodDisplay = "Mandiri Bill Payment";
     else if (pm.includes("permata")) paymentMethodDisplay = "Permata Virtual Account";
     else if (pm.includes("gopay")) paymentMethodDisplay = "GoPay Direct Charge";
-    else if (pm.includes("cstore") || pm.includes("indomaret")) paymentMethodDisplay = "Gerai Retail Indomaret / Alfamart";
+    else if (pm.includes("cstore") || pm.includes("indomaret")) paymentMethodDisplay = "Retail Store (Indomaret / Alfamart)";
     else paymentMethodDisplay = data.payment_method.toUpperCase();
   }
 
@@ -224,7 +224,7 @@ export default function OrderInvoicePage({
           href="/account/order"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-600 hover:text-black transition-colors"
         >
-          <FiArrowLeft /> Kembali ke Riwayat Pesanan
+          <FiArrowLeft /> Back to Order History
         </Link>
 
         <div className="flex items-center gap-2">
@@ -237,14 +237,14 @@ export default function OrderInvoicePage({
             ) : (
               <FiCopy className="text-neutral-500" />
             )}
-            <span>{copied ? "Tersalin!" : "Salin No. Faktur"}</span>
+            <span>{copied ? "Copied!" : "Copy Invoice No."}</span>
           </button>
           <button
             onClick={handlePrint}
             className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-neutral-900 hover:bg-black text-white text-xs font-semibold transition-all shadow-md active:scale-95"
           >
             <FiPrinter className="text-sm" />
-            <span>Cetak / Unduh PDF</span>
+            <span>Print / Download PDF</span>
           </button>
         </div>
       </div>
@@ -256,10 +256,10 @@ export default function OrderInvoicePage({
             <div className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping shrink-0" />
             <div>
               <p className="text-xs font-bold">
-                Menunggu Pembayaran untuk Pesanan Ini
+                Awaiting Payment for This Order
               </p>
               <p className="text-[11px] text-amber-700">
-                Selesaikan pembayaran Anda sebelum batas waktu habis menggunakan QRIS atau Virtual Account.
+                Complete your payment before the deadline using QRIS or Virtual Account.
               </p>
             </div>
           </div>
@@ -267,7 +267,7 @@ export default function OrderInvoicePage({
             href={`/checkout/payment/${data.order?._id || invoice}`}
             className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-neutral-900 hover:bg-black text-white text-xs font-semibold transition-all shadow-sm shrink-0"
           >
-            <FiCreditCard /> Lanjutkan Pembayaran &rarr;
+            <FiCreditCard /> Proceed to Payment &rarr;
           </Link>
         </div>
       )}
@@ -279,10 +279,10 @@ export default function OrderInvoicePage({
             <div className="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0" />
             <div>
               <p className="text-xs font-bold">
-                Pembayaran Kadaluarsa / Dibatalkan (Expired)
+                Payment Expired / Cancelled
               </p>
               <p className="text-[11px] text-red-700">
-                Batas waktu pembayaran untuk pesanan ini telah habis. Transaksi otomatis dibatalkan dan tidak dapat dilanjutkan.
+                The payment deadline for this order has expired. The transaction was automatically cancelled.
               </p>
             </div>
           </div>
@@ -290,7 +290,7 @@ export default function OrderInvoicePage({
             href="/shop"
             className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-neutral-900 hover:bg-black text-white text-xs font-semibold transition-all shadow-sm shrink-0"
           >
-            Mulai Belanja Baru &rarr;
+            Start New Order &rarr;
           </Link>
         </div>
       )}
@@ -318,12 +318,12 @@ export default function OrderInvoicePage({
               <p>
                 Menara Cyber Lt. 18, Jl. HR Rasuna Said Blok X-5 Kav. 1-2
               </p>
-              <p>Jakarta Selatan 12950, DKI Jakarta, Indonesia</p>
+              <p>South Jakarta 12950, DKI Jakarta, Indonesia</p>
               <p className="text-[10px] font-mono text-neutral-400">
-                NPWP: 01.345.678.9-012.000 &bull; Izin KBLI: 47411 (Retail Elektronik)
+                Tax ID (NPWP): 01.345.678.9-012.000 &bull; KBLI: 47411 (Consumer Electronics)
               </p>
               <p className="text-[10px] text-neutral-400">
-                Layanan Pelanggan: cs@cyberstore.id | (021) 5088-8888
+                Customer Support: cs@cyberstore.id | (021) 5088-8888
               </p>
             </div>
           </div>
@@ -332,28 +332,28 @@ export default function OrderInvoicePage({
           <div className="text-left sm:text-right space-y-2 shrink-0">
             <div>
               <span className="text-[10px] uppercase tracking-widest font-extrabold text-neutral-400 block">
-                BUKTI PEMBELIAN RESMI
+                OFFICIAL PROOF OF PURCHASE
               </span>
               <h2 className="text-lg sm:text-xl font-extrabold text-neutral-900 tracking-tight">
-                FAKTUR PENJUALAN (INVOICE)
+                TAX INVOICE & RECEIPT
               </h2>
             </div>
 
             <div className="space-y-1 text-xs">
               <div className="flex sm:justify-end items-center gap-2">
-                <span className="text-neutral-400 text-[11px]">No. Faktur:</span>
+                <span className="text-neutral-400 text-[11px]">Invoice No.:</span>
                 <span className="font-mono font-bold text-neutral-900 text-sm">
                   {invoiceNumber}
                 </span>
               </div>
               <div className="flex sm:justify-end items-center gap-2">
-                <span className="text-neutral-400 text-[11px]">Ref. Pesanan:</span>
+                <span className="text-neutral-400 text-[11px]">Order Ref:</span>
                 <span className="font-mono text-neutral-700">
                   {orderRefNumber}
                 </span>
               </div>
               <div className="flex sm:justify-end items-center gap-2">
-                <span className="text-neutral-400 text-[11px]">Tanggal:</span>
+                <span className="text-neutral-400 text-[11px]">Date:</span>
                 <span className="text-neutral-700">
                   {formattedDate}, {formattedTime} WIB
                 </span>
@@ -374,17 +374,17 @@ export default function OrderInvoicePage({
                 {isPaid ? (
                   <>
                     <FiCheckCircle className="text-emerald-600" />
-                    <span>LUNAS (PAID)</span>
+                    <span>PAID</span>
                   </>
                 ) : isCancelled ? (
                   <>
                     <FiXCircle className="text-red-600" />
-                    <span>DIBATALKAN / EXPIRED</span>
+                    <span>CANCELLED / EXPIRED</span>
                   </>
                 ) : (
                   <>
                     <FiClock className="text-amber-600" />
-                    <span>MENUNGGU PEMBAYARAN</span>
+                    <span>AWAITING PAYMENT</span>
                   </>
                 )}
               </span>
@@ -396,19 +396,19 @@ export default function OrderInvoicePage({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs print-avoid-break">
           {/* Billed To */}
           <div className="p-5 rounded-2xl bg-neutral-50/80 border border-neutral-200/60 space-y-2">
-            <h4 className="font-bold text-neutral-900 uppercase text-[10px] tracking-wider text-neutral-400 flex items-center gap-1.5">
-              <span>Ditagihkan Kepada (Billed To)</span>
+            <h4 className="font-bold uppercase text-[10px] tracking-wider text-neutral-400 flex items-center gap-1.5">
+              <span>Billed To</span>
             </h4>
             <div className="space-y-1">
               <p className="font-bold text-neutral-900 text-sm">
-                {billedUser?.name || deliveryAddr?.name || "Pelanggan Cyber Store"}
+                {billedUser?.name || deliveryAddr?.name || "Cyber Store Customer"}
               </p>
               <p className="text-neutral-600 font-mono text-[11px]">
                 {billedUser?.email || "customer@apple.com"}
               </p>
               <div className="pt-2 text-[11px] text-neutral-500">
                 <span className="font-medium text-neutral-400 block text-[10px] uppercase">
-                  Metode Pembayaran:
+                  Payment Method:
                 </span>
                 <span className="font-semibold text-neutral-800">
                   {paymentMethodDisplay}
@@ -419,26 +419,26 @@ export default function OrderInvoicePage({
 
           {/* Ship To */}
           <div className="p-5 rounded-2xl bg-neutral-50/80 border border-neutral-200/60 space-y-2">
-            <h4 className="font-bold text-neutral-900 uppercase text-[10px] tracking-wider text-neutral-400 flex items-center gap-1.5">
-              <span>Tujuan Pengiriman (Ship To)</span>
+            <h4 className="font-bold uppercase text-[10px] tracking-wider text-neutral-400 flex items-center gap-1.5">
+              <span>Ship To</span>
             </h4>
             <div className="space-y-1">
               <p className="font-bold text-neutral-900 text-sm">
-                {deliveryAddr?.name || "Penerima Pesanan"}
+                {deliveryAddr?.name || "Order Recipient"}
               </p>
               <p className="text-neutral-600 leading-relaxed text-[11px]">
                 {deliveryAddr?.detail ? `${deliveryAddr.detail}, ` : ""}
-                {deliveryAddr?.kelurahan ? `Desa/Kel. ${deliveryAddr.kelurahan}, ` : ""}
-                {deliveryAddr?.kecamatan ? `Kec. ${deliveryAddr.kecamatan}, ` : ""}
+                {deliveryAddr?.kelurahan ? `Village/Ward: ${deliveryAddr.kelurahan}, ` : ""}
+                {deliveryAddr?.kecamatan ? `District: ${deliveryAddr.kecamatan}, ` : ""}
                 {deliveryAddr?.kabupaten ? `${deliveryAddr.kabupaten}, ` : ""}
-                {deliveryAddr?.provinsi ? `Prov. ${deliveryAddr.provinsi}` : "Alamat Pengiriman Terdaftar"}
+                {deliveryAddr?.provinsi ? `Province: ${deliveryAddr.provinsi}` : "Registered Shipping Address"}
               </p>
               <div className="pt-2 text-[11px] text-neutral-500">
                 <span className="font-medium text-neutral-400 block text-[10px] uppercase">
-                  Layanan Ekspedisi:
+                  Shipping Carrier:
                 </span>
                 <span className="font-semibold text-neutral-800">
-                  Cyber Express Insured (Asuransi Resmi Ditanggung Cyber Store)
+                  Cyber Express Insured (Official insurance covered by Cyber Store)
                 </span>
               </div>
             </div>
@@ -451,10 +451,10 @@ export default function OrderInvoicePage({
             <thead>
               <tr className="border-b-2 border-neutral-200 text-neutral-500 uppercase font-bold text-[10px] tracking-wider">
                 <th className="py-3 pr-2 w-8">No.</th>
-                <th className="py-3 px-3">Produk & Spesifikasi</th>
-                <th className="py-3 px-3 text-center w-20">Kuantitas</th>
-                <th className="py-3 px-3 text-right w-32">Harga Satuan</th>
-                <th className="py-3 pl-3 text-right w-36">Jumlah</th>
+                <th className="py-3 px-3">Product & Specifications</th>
+                <th className="py-3 px-3 text-center w-20">Quantity</th>
+                <th className="py-3 px-3 text-right w-32">Unit Price</th>
+                <th className="py-3 pl-3 text-right w-36">Total</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100">
@@ -489,7 +489,7 @@ export default function OrderInvoicePage({
                             {item.name}
                           </p>
                           <p className="text-[10px] text-neutral-500">
-                            Garansi Resmi Apple Indonesia 1 Tahun (AASP Certified)
+                            Official Apple 1-Year Warranty (AASP Certified)
                           </p>
                           <span className="inline-block text-[9px] font-mono text-neutral-400 uppercase">
                             SKU: {String(item._id).slice(-8).toUpperCase()}
@@ -520,13 +520,13 @@ export default function OrderInvoicePage({
             <div className="p-4 rounded-2xl bg-neutral-50 border border-neutral-200/70 space-y-2">
               <div className="flex items-center gap-2 text-neutral-800 font-bold text-[11px]">
                 <FiShield className="text-neutral-700 text-sm" />
-                <span>Jaminan Keaslian & Garansi Resmi Apple</span>
+                <span>Authenticity Guarantee & Official Apple Warranty</span>
               </div>
               <p className="text-[10px] text-neutral-500 leading-relaxed">
-                Faktur ini adalah bukti pembelian sah yang diakui oleh seluruh Apple Authorized Service Provider (iBox, Digimap, Story-i, MitraCare) di seluruh Indonesia.
+                This invoice is an official proof of purchase recognized by all Apple Authorized Service Providers (iBox, Digimap, Story-i, MitraCare) across Indonesia.
               </p>
               <p className="text-[10px] font-mono text-neutral-400 pt-1 border-t border-neutral-200">
-                Dokumen ini diterbitkan secara elektronik oleh sistem ERP Cyber Store Indonesia dan sah tanpa cap basah.
+                This document is electronically issued by Cyber Store Indonesia ERP and is legally binding without a physical stamp.
               </p>
             </div>
           </div>
@@ -535,26 +535,26 @@ export default function OrderInvoicePage({
           <div className="sm:col-span-6 space-y-2 text-xs">
             <div className="space-y-2 pb-3 border-b border-neutral-200 text-neutral-600">
               <div className="flex justify-between">
-                <span>Subtotal Produk ({totalQty} Barang)</span>
+                <span>Product Subtotal ({totalQty} {totalQty === 1 ? "Item" : "Items"})</span>
                 <span className="font-mono font-semibold text-neutral-800">
                   {formatRupiah(subTotalAmount)}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span>PPN 11% (Termasuk Pajak)</span>
+                <span>VAT 11% (Included)</span>
                 <span className="font-mono text-neutral-700">
-                  {data.tax && data.tax > 0 ? formatRupiah(data.tax) : "Termasuk"}
+                  {data.tax && data.tax > 0 ? formatRupiah(data.tax) : "Included"}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span>Biaya Pengiriman & Asuransi</span>
+                <span>Shipping & Insurance</span>
                 <span className="font-mono text-neutral-700">
-                  {data.shipping === 0 ? "GRATIS" : formatRupiah(data.shipping || 0)}
+                  {data.shipping === 0 ? "FREE" : formatRupiah(data.shipping || 0)}
                 </span>
               </div>
               {Boolean(data.discount && data.discount > 0) && (
                 <div className="flex justify-between text-emerald-600 font-semibold">
-                  <span>Diskon Promo Cyber Store</span>
+                  <span>Cyber Store Promo Discount</span>
                   <span className="font-mono">-{formatRupiah(data.discount || 0)}</span>
                 </div>
               )}
@@ -563,10 +563,10 @@ export default function OrderInvoicePage({
             <div className="flex justify-between items-baseline pt-2">
               <div>
                 <span className="text-sm font-extrabold text-neutral-900 block">
-                  Total Pembayaran
+                  Total Amount Paid
                 </span>
                 <span className="text-[10px] text-neutral-400">
-                  (Sudah Termasuk PPN)
+                  (VAT Included)
                 </span>
               </div>
               <span className="text-xl font-extrabold font-mono text-neutral-900 tracking-tight">
@@ -583,7 +583,7 @@ export default function OrderInvoicePage({
             <span>Cyber Store Indonesia &bull; PT Cyber Store Indonesia</span>
           </div>
           <p className="font-mono">
-            Dicetak pada: {new Date().toLocaleDateString("id-ID")} {new Date().toLocaleTimeString("id-ID")}
+            Printed on: {new Date().toLocaleDateString("en-US")} {new Date().toLocaleTimeString("en-US")}
           </p>
         </div>
       </div>

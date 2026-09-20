@@ -13,9 +13,10 @@ export const POST = async (req: NextRequest, res: NextResponse) => {
     try {
         const { data } = await axios.post(`${process.env.API_ENDPOINT_DATA}/orders`, body, config)
         return NextResponse.json(data)
-    } catch (error) {
-        console.log(error)
-        return NextResponse.error()
+    } catch (error: any) {
+        console.error(error);
+        const status = error.response?.status || 500;
+        return NextResponse.json({ message: error.response?.data?.message || error.message || 'Failed to create order' }, { status });
     }
 };
 
@@ -61,8 +62,16 @@ export const GET = async (req: NextRequest, res: NextResponse) => {
             currentPage: data?.currentPage ?? (page ? parseInt(page) : 1),
             limit: data?.limit ?? (limit ? parseInt(limit) : list.length),
         });
-    } catch (error) {
-        console.log(error);
-        return NextResponse.error();
+    } catch (error: any) {
+        console.error(error);
+        return NextResponse.json({
+            data: [],
+            orders: [],
+            count: 0,
+            total: 0,
+            totalPages: 1,
+            currentPage: 1,
+            limit: 5,
+        });
     }
 }

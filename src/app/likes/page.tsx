@@ -8,12 +8,12 @@ import axios from "axios";
 import { IoHeartOutline } from "react-icons/io5";
 import Link from "next/link";
 import { FiArrowRight } from "react-icons/fi";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Likes() {
   const [data, setData] = useState<CardProps[]>([]);
   const [loading, setLoading] = useState(true);
-  const { status } = useSession();
+  const { status } = useAuth();
 
   useEffect(() => {
     setLoading(true);

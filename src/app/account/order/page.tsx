@@ -129,7 +129,7 @@ export default function Order() {
             Order History
           </h1>
           <p className="text-xs text-neutral-500 mt-1">
-            Pantau status pesanan, review invoice, dan kelola pengiriman produk Apple Anda
+            Track order status, review invoices, and manage your Apple product deliveries
           </p>
         </div>
 
@@ -137,7 +137,7 @@ export default function Order() {
         <div className="flex items-center gap-2">
           <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-neutral-100 text-neutral-700 text-xs font-semibold">
             <FiPackage className="text-neutral-500" />
-            {totalOrders} Total Pesanan
+            {totalOrders} Total {totalOrders === 1 ? "Order" : "Orders"}
           </span>
         </div>
       </div>
@@ -146,10 +146,10 @@ export default function Order() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-1">
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
           {[
-            { id: "all", label: "Semua", icon: FiFilter },
-            { id: "pending", label: "Menunggu", icon: FiClock },
-            { id: "completed", label: "Selesai", icon: FiCheckCircle },
-            { id: "cancelled", label: "Dibatalkan", icon: FiXCircle },
+            { id: "all", label: "All", icon: FiFilter },
+            { id: "pending", label: "Pending", icon: FiClock },
+            { id: "completed", label: "Completed", icon: FiCheckCircle },
+            { id: "cancelled", label: "Cancelled", icon: FiXCircle },
           ].map((tab) => {
             const Icon = tab.icon;
             const active = statusFilter === tab.id;
@@ -172,15 +172,15 @@ export default function Order() {
 
         {/* Per-Page Selector */}
         <div className="flex items-center gap-2 self-end sm:self-center">
-          <span className="text-xs text-neutral-400 font-medium">Tampilkan:</span>
+          <span className="text-xs text-neutral-400 font-medium">Show:</span>
           <select
             value={limit}
             onChange={(e) => handleLimitChange(Number(e.target.value))}
             className="text-xs font-semibold bg-neutral-50 border border-neutral-200 rounded-xl px-2.5 py-1.5 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-black cursor-pointer hover:bg-neutral-100 transition-colors"
           >
-            <option value={5}>5 per hal</option>
-            <option value={10}>10 per hal</option>
-            <option value={20}>20 per hal</option>
+            <option value={5}>5 per page</option>
+            <option value={10}>10 per page</option>
+            <option value={20}>20 per page</option>
           </select>
         </div>
       </div>
@@ -193,13 +193,13 @@ export default function Order() {
           </div>
           <h3 className="text-base font-semibold text-neutral-900">
             {statusFilter === "all"
-              ? "Belum Ada Pesanan"
-              : `Tidak Ada Pesanan dengan Status "${statusFilter}"`}
+              ? "No Orders Yet"
+              : `No Orders with Status "${statusFilter}"`}
           </h3>
           <p className="text-xs text-neutral-500 max-w-sm mx-auto">
             {statusFilter === "all"
-              ? "Anda belum pernah melakukan pemesanan. Jelajahi jajaran produk Apple bergaransi resmi kami sekarang."
-              : "Coba ganti filter status di atas untuk melihat riwayat pesanan Anda lainnya."}
+              ? "You haven't placed any orders yet. Explore our genuine Apple product lineup now."
+              : "Try changing the status filter above to view your other order history."}
           </p>
           <div className="pt-2">
             {statusFilter === "all" ? (
@@ -207,14 +207,14 @@ export default function Order() {
                 href="/shop"
                 className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-neutral-900 hover:bg-black text-white text-xs font-semibold transition-all shadow-xs"
               >
-                Mulai Belanja <FiArrowRight />
+                Start Shopping <FiArrowRight />
               </Link>
             ) : (
               <button
                 onClick={() => handleStatusChange("all")}
                 className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-neutral-200/80 hover:bg-neutral-300 text-neutral-800 text-xs font-semibold transition-colors"
               >
-                Lihat Semua Pesanan
+                View All Orders
               </button>
             )}
           </div>
@@ -226,7 +226,7 @@ export default function Order() {
             <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-2xl">
               <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-neutral-900 text-white text-xs font-medium shadow-md">
                 <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Memuat data...
+                Loading data...
               </div>
             </div>
           )}
@@ -237,10 +237,10 @@ export default function Order() {
                 <tr className="border-b border-neutral-200 text-neutral-400 uppercase font-semibold text-[10px] tracking-wider">
                   <th className="pb-3 pr-4">Order Ref</th>
                   <th className="pb-3 px-4">Items</th>
-                  <th className="pb-3 px-4">Pembayaran</th>
-                  <th className="pb-3 px-4">Pengiriman</th>
+                  <th className="pb-3 px-4">Payment</th>
+                  <th className="pb-3 px-4">Delivery</th>
                   <th className="pb-3 px-4 text-right">Total</th>
-                  <th className="pb-3 pl-4 text-right">Aksi</th>
+                  <th className="pb-3 pl-4 text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-100">
@@ -260,7 +260,7 @@ export default function Order() {
                   const isPending = !isPaid && !isCancelled;
 
                   const formattedDate = item.createdAt
-                    ? new Date(item.createdAt).toLocaleDateString("id-ID", {
+                    ? new Date(item.createdAt).toLocaleDateString("en-US", {
                         day: "numeric",
                         month: "short",
                         year: "numeric",
@@ -284,13 +284,14 @@ export default function Order() {
                       </td>
                       <td className="py-4 px-4 text-neutral-600">
                         <div className="font-medium text-neutral-800">
-                          {item.order_items?.length || 1} produk
+                          {item.order_items?.length || 1}{" "}
+                          {(item.order_items?.length || 1) === 1 ? "item" : "items"}
                         </div>
                         {item.order_items?.[0]?.name && (
                           <div className="text-[10px] text-neutral-400 truncate max-w-[160px]">
                             {item.order_items[0].name}
                             {item.order_items.length > 1 &&
-                              ` +${item.order_items.length - 1} lainnya`}
+                              ` +${item.order_items.length - 1} more`}
                           </div>
                         )}
                       </td>
@@ -327,7 +328,7 @@ export default function Order() {
                               href={`/checkout/payment/${item._id}`}
                               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-900 hover:bg-black text-white text-[11px] font-semibold transition-colors shadow-xs shrink-0"
                             >
-                              <FiCreditCard className="text-xs" /> Bayar
+                              <FiCreditCard className="text-xs" /> Pay Now
                             </Link>
                           )}
                           <Link
@@ -350,9 +351,9 @@ export default function Order() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-6 border-t border-neutral-100">
               {/* Pagination Info */}
               <div className="text-xs text-neutral-500 text-center sm:text-left font-medium">
-                Menampilkan <span className="font-semibold text-neutral-900">{startItem}</span> -{" "}
-                <span className="font-semibold text-neutral-900">{endItem}</span> dari{" "}
-                <span className="font-semibold text-neutral-900">{totalOrders}</span> pesanan
+                Showing <span className="font-semibold text-neutral-900">{startItem}</span> -{" "}
+                <span className="font-semibold text-neutral-900">{endItem}</span> of{" "}
+                <span className="font-semibold text-neutral-900">{totalOrders}</span> orders
               </div>
 
               {/* Page Number Buttons */}
@@ -362,7 +363,7 @@ export default function Order() {
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1 || isFetching}
                   className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold border border-neutral-200 text-neutral-700 hover:bg-neutral-100 disabled:opacity-40 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-all"
-                  aria-label="Halaman Sebelumnya"
+                  aria-label="Previous Page"
                 >
                   <FiChevronLeft className="text-sm" />
                   <span className="hidden sm:inline">Prev</span>
@@ -404,7 +405,7 @@ export default function Order() {
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage >= totalPages || isFetching}
                   className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold border border-neutral-200 text-neutral-700 hover:bg-neutral-100 disabled:opacity-40 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-all"
-                  aria-label="Halaman Berikutnya"
+                  aria-label="Next Page"
                 >
                   <span className="hidden sm:inline">Next</span>
                   <FiChevronRight className="text-sm" />

@@ -1,21 +1,30 @@
-import axios from "axios";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { clearAuthCookies } from "@/lib/auth-cookies";
 
-export const GET = (req: NextRequest) => {
-    const token = cookies().get('jwt');
+const handleLogout = async (req: NextRequest) => {
+  const cookieStore = cookies();
+  const token = cookieStore.get("jwt")?.value || cookieStore.get("token")?.value;
+  const refreshToken = cookieStore.get("refreshToken")?.value;
 
-    return axios.post(`${process.env.API_ENDPOINT_USER}/logout`, {}, {
+  if (token || refreshToken) {
+    try {
+      await fetch(`${process.env.API_ENDPOINT_USER}/logout`, {
+        method: "POST",
         headers: {
-            Authorization: `Bearer ${token?.value}`
-        }
-    })
-        .then(() => {
-            cookies().delete('jwt');
-            return NextResponse.json({ message: 'Logged out' });
-        })
-        .catch((error) => {
-            console.error('Error during logout:', error);
-            return NextResponse.json({ message: 'Logout failed', error: error.message }, { status: 500 });
-        });
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ refreshToken }),
+      });
+    } catch (error: any) {
+      console.warn("Backend logout note:", error?.message);
+    }
+  }
+
+  clearAuthCookies();
+  return NextResponse.json({ success: true, message: "Logged out successfully" });
 };
+
+export const GET = handleLogout;
+export const POST = handleLogout;

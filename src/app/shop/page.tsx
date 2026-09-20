@@ -6,13 +6,13 @@ import CardShop from "@/components/shop/Card";
 import CardSkeleton from "@/components/shop/CardSkeleton";
 import PaginationShop from "@/components/shop/Pagination";
 import { useSearchParams } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/context/AuthContext";
 import { HiCheck, HiOutlineShoppingBag } from "react-icons/hi2";
 import { FiSearch } from "react-icons/fi";
 
 export default function Shop() {
   const [showToast, setShowToast] = useState(false);
-  const { status } = useSession();
+  const { status } = useAuth();
   const searchParams = useSearchParams();
   const category = searchParams.get("category");
   const q = searchParams.get("q");

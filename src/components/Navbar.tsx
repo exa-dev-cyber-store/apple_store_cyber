@@ -1,15 +1,16 @@
 "use client";
 
 import Image from "next/image";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { HiMagnifyingGlass, HiOutlineShoppingBag, HiXMark, HiBars3 } from "react-icons/hi2";
 import { IoHeartOutline } from "react-icons/io5";
 import axios from "axios";
-import { FormEvent, useContext, useEffect, useState } from "react";
+import { FormEvent, useContext, useEffect, useState, useRef } from "react";
 import { CartProvider, CartType } from "@/context";
 import { formatRupiah, getImageUrl } from "@/helper";
+import NotificationDropdown from "./NotificationDropdown";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -22,23 +23,101 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [cartDropdownOpen, setCartDropdownOpen] = useState<boolean>(false);
-  const { data: session, status } = useSession();
+  const { user, status, logout } = useAuth();
+  const session = user ? { user } : null;
+
+  const [userAvatar, setUserAvatar] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [imgError, setImgError] = useState<boolean>(false);
+
+  const hasFetchedProfileRef = useRef(false);
+  const hasFetchedCartRef = useRef(false);
 
   useEffect(() => {
-    if (status === "authenticated" && setCart) {
+    if (session?.user) {
+      if (session.user.image) {
+        setUserAvatar(session.user.image);
+        setImgError(false);
+      }
+      if (session.user.name) {
+        setUserName(session.user.name);
+      }
+      if (session.user.email) {
+        setUserEmail(session.user.email);
+      }
+    }
+  }, [session?.user?.image, session?.user?.name, session?.user?.email]);
+
+  useEffect(() => {
+    if (status === "authenticated" && !hasFetchedProfileRef.current) {
+      hasFetchedProfileRef.current = true;
+      fetch("/api/auth/profile")
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          const u = data?.data?.user;
+          if (u) {
+            if (u.avatar) {
+              setUserAvatar(u.avatar);
+              setImgError(false);
+            }
+            if (u.name) {
+              setUserName(u.name);
+            }
+            if (u.email) {
+              setUserEmail(u.email);
+            }
+          }
+        })
+        .catch(() => {});
+    } else if (status === "unauthenticated") {
+      hasFetchedProfileRef.current = false;
+      setUserAvatar(null);
+      setUserName(null);
+      setUserEmail(null);
+    }
+  }, [status]);
+
+  useEffect(() => {
+    const handleAvatarUpdated = (e: any) => {
+      const url = e.detail;
+      if (url) {
+        setUserAvatar(url);
+        setImgError(false);
+      }
+    };
+    const handleProfileUpdated = (e: any) => {
+      if (e.detail?.name) setUserName(e.detail.name);
+      if (e.detail?.email) setUserEmail(e.detail.email);
+      if (e.detail?.avatar) {
+        setUserAvatar(e.detail.avatar);
+        setImgError(false);
+      }
+    };
+
+    window.addEventListener("avatar-updated", handleAvatarUpdated);
+    window.addEventListener("profile-updated", handleProfileUpdated);
+    return () => {
+      window.removeEventListener("avatar-updated", handleAvatarUpdated);
+      window.removeEventListener("profile-updated", handleProfileUpdated);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (status === "authenticated" && setCart && !hasFetchedCartRef.current) {
+      hasFetchedCartRef.current = true;
       axios.get("/api/cart").then((res) => {
         if (res.data?.products) {
           setCart(res.data.products);
         }
       }).catch(() => {});
+    } else if (status === "unauthenticated") {
+      hasFetchedCartRef.current = false;
     }
   }, [status, setCart]);
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: "/" });
-    try {
-      await axios.get("/api/auth/logout");
-    } catch {}
+    await logout("/");
   };
 
   const handleSearch = (e: FormEvent) => {
@@ -92,7 +171,7 @@ export default function Navbar() {
               </div>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="font-extrabold tracking-tight text-lg text-neutral-900 group-hover:text-black transition-colors">
+              <span className="font-extrabold tracking-tight text-base sm:text-lg text-neutral-900 group-hover:text-black transition-colors whitespace-nowrap">
                 Cyber<span className="text-cyan-600">Apple</span>
               </span>
               <span className="text-[9px] uppercase font-black tracking-widest px-1.5 py-0.5 bg-neutral-950 text-cyan-300 rounded-md border border-cyan-500/20 shadow-xs">
@@ -102,7 +181,7 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-7 text-[13px] font-normal text-neutral-600">
+          <nav className="hidden lg:flex items-center gap-4 xl:gap-7 text-xs xl:text-[13px] font-medium text-neutral-600 whitespace-nowrap">
             <Link
               href="/"
               className={`transition hover:text-black ${
@@ -123,15 +202,15 @@ export default function Navbar() {
           </nav>
 
           {/* Right Action Icons & Search */}
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
             {/* Search Input */}
-            <form onSubmit={handleSearch} className="relative hidden lg:block">
+            <form onSubmit={handleSearch} className="relative hidden xl:block">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search products..."
-                className="w-44 focus:w-60 bg-neutral-100/90 hover:bg-neutral-100 focus:bg-white text-xs pl-8 pr-3 py-1.5 rounded-full border border-neutral-200/80 focus:border-neutral-400 focus:outline-none transition-all duration-300 placeholder:text-neutral-400"
+                className="w-36 xl:w-48 focus:w-60 bg-neutral-100/90 hover:bg-neutral-100 focus:bg-white text-xs pl-8 pr-3 py-1.5 rounded-full border border-neutral-200/80 focus:border-neutral-400 focus:outline-none transition-all duration-300 placeholder:text-neutral-400"
               />
               <HiMagnifyingGlass className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400 text-sm pointer-events-none" />
             </form>
@@ -144,6 +223,9 @@ export default function Navbar() {
             >
               <IoHeartOutline className="text-xl" />
             </Link>
+
+            {/* Notification Center Dropdown */}
+            <NotificationDropdown />
 
             {/* Cart Dropdown Trigger */}
             <div className="relative">
@@ -237,22 +319,52 @@ export default function Navbar() {
                 <div
                   tabIndex={0}
                   role="button"
-                  className="flex items-center gap-1.5 p-1 rounded-full hover:bg-neutral-100 transition-colors"
+                  aria-label="User account menu"
+                  className="flex items-center gap-1.5 p-0.5 rounded-full hover:bg-neutral-100 transition-colors"
                 >
-                  <div className="w-7 h-7 rounded-full bg-neutral-900 text-white flex items-center justify-center text-xs font-semibold uppercase">
-                    {session?.user?.name?.[0] || "U"}
+                  <div className="w-8 h-8 rounded-full bg-neutral-900 text-white flex items-center justify-center text-xs font-semibold uppercase overflow-hidden flex-shrink-0 shadow-xs ring-1 ring-neutral-200">
+                    {userAvatar && !imgError ? (
+                      <img
+                        src={getImageUrl(userAvatar)}
+                        alt={userName || "User Avatar"}
+                        onError={() => setImgError(true)}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      (userName || session?.user?.name || "U")[0]
+                    )}
                   </div>
                 </div>
                 <ul
                   tabIndex={0}
-                  className="dropdown-content menu p-2 shadow-2xl bg-white/95 backdrop-blur-xl rounded-2xl w-48 mt-2 border border-neutral-200 z-50 text-xs"
+                  className="dropdown-content menu p-2 shadow-2xl bg-white/95 backdrop-blur-xl rounded-2xl w-56 mt-2 border border-neutral-200 z-50 text-xs"
                 >
-                  <li className="menu-title text-[10px] text-neutral-400 font-bold px-3 py-1 uppercase">
-                    {session?.user?.name || "User"}
+                  <li className="px-3 py-2 border-b border-neutral-100 mb-1 pointer-events-none">
+                    <div className="flex items-center gap-2.5 p-0">
+                      <div className="w-8 h-8 rounded-full bg-neutral-900 text-white flex items-center justify-center text-xs font-bold uppercase overflow-hidden flex-shrink-0">
+                        {userAvatar && !imgError ? (
+                          <img
+                            src={getImageUrl(userAvatar)}
+                            alt={userName || "User"}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          (userName || session?.user?.name || "U")[0]
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-bold text-neutral-900 truncate text-xs">
+                          {userName || session?.user?.name || "Cyber Customer"}
+                        </p>
+                        <p className="text-[10px] text-neutral-400 truncate">
+                          {userEmail || session?.user?.email}
+                        </p>
+                      </div>
+                    </div>
                   </li>
                   <li>
                     <Link href="/account" className="py-2 hover:bg-neutral-100 rounded-lg">
-                      My Account
+                      My Profile
                     </Link>
                   </li>
                   <li>
@@ -284,10 +396,10 @@ export default function Navbar() {
               </Link>
             )}
 
-            {/* Mobile Hamburger Toggle */}
+            {/* Mobile / Tablet Hamburger Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-neutral-600 hover:text-black"
+              className="lg:hidden p-2 text-neutral-600 hover:text-black rounded-lg hover:bg-neutral-100 transition-colors"
               aria-label="Toggle Menu"
             >
               {mobileMenuOpen ? <HiXMark className="text-2xl" /> : <HiBars3 className="text-2xl" />}
@@ -296,9 +408,9 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Responsive Navigation Drawer */}
+      {/* Mobile / Tablet Responsive Navigation Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-neutral-200 bg-white/95 backdrop-blur-xl px-4 py-4 space-y-3">
+        <div className="lg:hidden border-t border-neutral-200 bg-white/95 backdrop-blur-xl px-4 py-4 space-y-3">
           <form onSubmit={handleSearch} className="relative mb-3">
             <input
               type="text"
@@ -336,13 +448,28 @@ export default function Navbar() {
                 <Link
                   href="/account"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-xs font-semibold text-neutral-800"
+                  className="flex items-center gap-2.5 text-xs font-semibold text-neutral-800"
                 >
-                  {session?.user?.name}
+                  <div className="w-8 h-8 rounded-full bg-neutral-900 text-white flex items-center justify-center text-xs font-bold uppercase overflow-hidden flex-shrink-0 shadow-xs ring-1 ring-neutral-200">
+                    {userAvatar && !imgError ? (
+                      <img
+                        src={getImageUrl(userAvatar)}
+                        alt={userName || "User"}
+                        onError={() => setImgError(true)}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      (userName || session?.user?.name || "U")[0]
+                    )}
+                  </div>
+                  <div className="min-w-0 text-left">
+                    <p className="font-semibold text-neutral-900 truncate">{userName || session?.user?.name}</p>
+                    <p className="text-[10px] text-neutral-400 truncate">Manage Profile</p>
+                  </div>
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="text-xs text-red-600 font-medium"
+                  className="text-xs text-red-600 font-medium px-2.5 py-1.5 hover:bg-red-50 rounded-xl transition-colors"
                 >
                   Sign Out
                 </button>

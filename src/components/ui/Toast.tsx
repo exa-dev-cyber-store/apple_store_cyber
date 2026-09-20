@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   FiCheckCircle,
   FiAlertCircle,
@@ -25,7 +26,9 @@ export interface ModalAlertItem {
   message: string;
   type?: ToastType;
   confirmText?: string;
+  cancelText?: string;
   onConfirm?: () => void;
+  onCancel?: () => void;
 }
 
 type Listener = (toasts: ToastItem[]) => void;
@@ -39,6 +42,12 @@ const modalListeners: ModalListener[] = [];
 
 export const toast = {
   show: (type: ToastType, title: string, message?: string, duration = 4000) => {
+    // Prevent duplicate toasts from stacking simultaneously
+    const isDuplicate = toastsState.some(
+      (t) => t.type === type && t.title === title && (t.message || "") === (message || "")
+    );
+    if (isDuplicate) return;
+
     const id = Math.random().toString(36).substring(2, 9);
     const item: ToastItem = { id, type, title, message, duration };
     toastsState = [...toastsState, item];
@@ -69,15 +78,19 @@ export const toast = {
     message: string;
     type?: ToastType;
     confirmText?: string;
+    cancelText?: string;
     onConfirm?: () => void;
+    onCancel?: () => void;
   }) => {
     modalState = {
       isOpen: true,
       title: options.title,
       message: options.message,
       type: options.type || "info",
-      confirmText: options.confirmText || "Mengerti",
+      confirmText: options.confirmText || "OK",
+      cancelText: options.cancelText,
       onConfirm: options.onConfirm,
+      onCancel: options.onCancel,
     };
     modalListeners.forEach((fn) => fn(modalState));
   },
@@ -90,6 +103,22 @@ export const toast = {
 export function ToastContainer() {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [modal, setModal] = useState<ModalAlertItem | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Lock body scroll when modal alert is open
+  useEffect(() => {
+    if (modal?.isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [modal?.isOpen]);
 
   useEffect(() => {
     const handleToastsChange = (newToasts: ToastItem[]) => {
@@ -160,55 +189,85 @@ export function ToastContainer() {
       </div>
 
       {/* Apple-grade Alert Dialog Modal (Alternative to native alert) */}
-      {modal && modal.isOpen && (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/50 backdrop-blur-md animate-fadeIn">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full border border-neutral-200/80 shadow-2xl text-center space-y-4">
-            <div className="w-14 h-14 rounded-full mx-auto flex items-center justify-center shadow-sm">
-              {modal.type === "success" && (
-                <div className="w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl border border-emerald-100">
-                  <FiCheckCircle />
-                </div>
-              )}
-              {modal.type === "error" && (
-                <div className="w-14 h-14 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center text-2xl border border-rose-100">
-                  <FiAlertCircle />
-                </div>
-              )}
-              {modal.type === "warning" && (
-                <div className="w-14 h-14 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center text-2xl border border-amber-100">
-                  <FiAlertTriangle />
-                </div>
-              )}
-              {(modal.type === "info" || !modal.type) && (
-                <div className="w-14 h-14 rounded-full bg-neutral-100 text-neutral-800 flex items-center justify-center text-2xl border border-neutral-200">
-                  <FiInfo />
-                </div>
-              )}
-            </div>
+      {modal && modal.isOpen && mounted &&
+        createPortal(
+          <div
+            className="fixed inset-0 top-0 left-0 w-full h-full min-h-screen z-[99999] flex items-center justify-center p-4 bg-black/65 backdrop-blur-md overflow-y-auto animate-modal-fade"
+            style={{ margin: 0, zIndex: 99999 }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                modal.onCancel?.();
+                toast.closeModal();
+              }
+            }}
+          >
+            <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full border border-neutral-200/80 shadow-2xl text-center space-y-4 animate-modal-scale relative z-10">
+              <div className="w-14 h-14 rounded-full mx-auto flex items-center justify-center shadow-sm">
+                {modal.type === "success" && (
+                  <div className="w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl border border-emerald-100">
+                    <FiCheckCircle />
+                  </div>
+                )}
+                {modal.type === "error" && (
+                  <div className="w-14 h-14 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center text-2xl border border-rose-100">
+                    <FiAlertCircle />
+                  </div>
+                )}
+                {modal.type === "warning" && (
+                  <div className="w-14 h-14 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center text-2xl border border-amber-100">
+                    <FiAlertTriangle />
+                  </div>
+                )}
+                {(modal.type === "info" || !modal.type) && (
+                  <div className="w-14 h-14 rounded-full bg-neutral-100 text-neutral-800 flex items-center justify-center text-2xl border border-neutral-200">
+                    <FiInfo />
+                  </div>
+                )}
+              </div>
 
-            <div className="space-y-1.5">
-              <h3 className="text-base font-bold text-neutral-900 tracking-tight">
-                {modal.title}
-              </h3>
-              <p className="text-xs text-neutral-600 leading-relaxed">
-                {modal.message}
-              </p>
-            </div>
+              <div className="space-y-1.5">
+                <h3 className="text-base font-bold text-neutral-900 tracking-tight">
+                  {modal.title}
+                </h3>
+                <p className="text-xs text-neutral-600 leading-relaxed">
+                  {modal.message}
+                </p>
+              </div>
 
-            <div className="pt-2">
-              <button
-                onClick={() => {
-                  modal.onConfirm?.();
-                  toast.closeModal();
-                }}
-                className="w-full py-2.5 px-6 rounded-full bg-neutral-900 hover:bg-black text-white text-xs font-semibold shadow-md transition-all active:scale-[0.98]"
-              >
-                {modal.confirmText || "Mengerti"}
-              </button>
+              <div className="pt-3 flex items-center justify-center gap-2.5">
+                {modal.cancelText && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      modal.onCancel?.();
+                      toast.closeModal();
+                    }}
+                    className="flex-1 py-2.5 px-5 rounded-full border border-neutral-200 hover:bg-neutral-50 text-neutral-700 text-xs font-semibold transition-all active:scale-[0.98]"
+                  >
+                    {modal.cancelText}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    modal.onConfirm?.();
+                    toast.closeModal();
+                  }}
+                  className={`py-2.5 px-6 rounded-full text-white text-xs font-semibold shadow-md transition-all active:scale-[0.98] ${
+                    modal.cancelText ? "flex-1" : "w-full"
+                  } ${
+                    modal.type === "error" || modal.type === "warning"
+                      ? "bg-red-600 hover:bg-red-700"
+                      : "bg-neutral-900 hover:bg-black"
+                  }`}
+                >
+                  {modal.confirmText || "OK"}
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </>
   );
 }
