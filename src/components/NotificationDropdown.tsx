@@ -60,6 +60,7 @@ export default function NotificationDropdown() {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const lastFetchRef = useRef<number>(0);
 
   // Hook for Firebase Cloud Messaging (FCM) - strictly active ONLY when authenticated
   const { permission, isLoading: isFcmLoading, enableNotifications } = useFcm((fcmPayload) => {
@@ -92,6 +93,7 @@ export default function NotificationDropdown() {
 
     try {
       setLoading(true);
+      lastFetchRef.current = Date.now();
       const res = await axios.get("/api/notifications");
       const list = res.data?.data?.notifications || res.data?.notifications || [];
       const normalizedList = Array.isArray(list)
@@ -132,25 +134,14 @@ export default function NotificationDropdown() {
 
     let eventSource: EventSource | null = null;
     let reconnectTimeout: NodeJS.Timeout | null = null;
-    let watchdogTimer: NodeJS.Timeout | null = null;
     let retryAttempt = 0;
     let isUnmounted = false;
 
-    // Reset watchdog: if no activity or heartbeat ping received in 45s, refresh token & reconnect
-    const resetWatchdog = () => {
-      if (watchdogTimer) clearTimeout(watchdogTimer);
-      watchdogTimer = setTimeout(async () => {
-        if (isUnmounted) return;
-        try {
-          await fetch("/api/auth/refresh", { method: "POST" });
-        } catch {}
-        reconnect(0);
-      }, 45000);
-    };
-
     const cleanupSSE = () => {
-      if (watchdogTimer) clearTimeout(watchdogTimer);
-      if (reconnectTimeout) clearTimeout(reconnectTimeout);
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+        reconnectTimeout = null;
+      }
       if (eventSource) {
         eventSource.onopen = null;
         eventSource.onmessage = null;
@@ -164,11 +155,16 @@ export default function NotificationDropdown() {
       cleanupSSE();
       if (isUnmounted || !isAuthenticated) return;
 
-      // Exponential backoff with jitter: 2s -> 4s -> 8s -> max 16s
-      const delay =
-        delayMs !== undefined
-          ? delayMs
-          : Math.min(16000, 2000 * Math.pow(2, retryAttempt)) + Math.random() * 1000;
+      // Exponential backoff with jitter (2s, 3s, 4.5s... capped at 30s)
+      // Ease off to 60s if persistently disconnected
+      let delay = delayMs;
+      if (delay === undefined) {
+        if (retryAttempt >= 10) {
+          delay = 60000;
+        } else {
+          delay = Math.min(30000, 2000 * Math.pow(1.5, retryAttempt)) + Math.random() * 1000;
+        }
+      }
       retryAttempt++;
 
       reconnectTimeout = setTimeout(() => {
@@ -187,14 +183,12 @@ export default function NotificationDropdown() {
 
         eventSource.onopen = () => {
           retryAttempt = 0; // Connected successfully, reset backoff
-          resetWatchdog();
         };
 
         eventSource.onmessage = (event) => {
-          resetWatchdog();
           try {
             const data = JSON.parse(event.data);
-            if (data?.type === "connected") {
+            if (data?.type === "connected" || data?.type === "ping") {
               return;
             }
 
@@ -220,15 +214,11 @@ export default function NotificationDropdown() {
           } catch {}
         };
 
-        eventSource.onerror = async () => {
-          // Immediately refresh auth token before reconnecting if unauthorized or disconnected
-          try {
-            await fetch("/api/auth/refresh", { method: "POST" });
-          } catch {}
+        eventSource.onerror = () => {
+          // Connection interrupted or closed. Clean up and reconnect with exponential backoff.
+          // Note: Next.js BFF proxy (/api/notifications/stream) transparently handles token validation & refresh.
           reconnect();
         };
-
-        resetWatchdog();
       } catch {
         reconnect();
       }
@@ -236,15 +226,15 @@ export default function NotificationDropdown() {
 
     connect();
 
-    // Reconnect & refetch immediately when browser tab is focused / un-minimized
-    const handleVisibilityChange = async () => {
+    // Reconnect only if disconnected when browser tab is focused; throttle notification refetch
+    const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
-        if (!eventSource || eventSource.readyState !== EventSource.OPEN) {
+        if (!eventSource || eventSource.readyState === EventSource.CLOSED) {
           retryAttempt = 0;
-          try {
-            await fetch("/api/auth/refresh", { method: "POST" });
-          } catch {}
           connect();
+        }
+        const now = Date.now();
+        if (now - lastFetchRef.current > 30000) {
           fetchNotifications();
         }
       }
@@ -254,7 +244,10 @@ export default function NotificationDropdown() {
     const handleOnline = () => {
       retryAttempt = 0;
       connect();
-      fetchNotifications();
+      const now = Date.now();
+      if (now - lastFetchRef.current > 30000) {
+        fetchNotifications();
+      }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
