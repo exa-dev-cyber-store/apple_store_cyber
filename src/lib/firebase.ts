@@ -1,14 +1,14 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
 import { getMessaging, getToken, onMessage, isSupported, Messaging } from "firebase/messaging";
 
-// Firebase configuration from environment variables
+// Firebase configuration from environment variables with fallback
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyBKDSH1WeCu3M2y134Z9mAtkqA8YKPqxXA",
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "testflutterfirebase-26e7c.firebaseapp.com",
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "testflutterfirebase-26e7c",
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "testflutterfirebase-26e7c.firebasestorage.app",
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "1043117609248",
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:1043117609248:web:78aa5b0f4905b4fcfb8745",
 };
 
 let app: FirebaseApp | null = null;
@@ -20,14 +20,20 @@ let messaging: Messaging | null = null;
 export function getFirebaseClientApp(): FirebaseApp | null {
   if (typeof window === "undefined") return null;
 
-  if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+  try {
+    if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+      console.warn("[FCM] Missing Firebase apiKey or projectId in config.");
+      return null;
+    }
+
+    if (!app) {
+      app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+    }
+    return app;
+  } catch (err: any) {
+    console.warn("[FCM] initializeApp error:", err?.message || err);
     return null;
   }
-
-  if (!app) {
-    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-  }
-  return app;
 }
 
 /**
@@ -36,19 +42,24 @@ export function getFirebaseClientApp(): FirebaseApp | null {
 export async function getFirebaseMessaging(): Promise<Messaging | null> {
   if (typeof window === "undefined") return null;
 
-  const supported = await isSupported();
-  if (!supported) {
-    console.info("FCM is not supported in this browser environment.");
+  try {
+    const supported = await isSupported().catch(() => false);
+    if (!supported) {
+      console.info("[FCM] Push messaging is not supported in this browser environment.");
+      return null;
+    }
+
+    const clientApp = getFirebaseClientApp();
+    if (!clientApp) return null;
+
+    if (!messaging) {
+      messaging = getMessaging(clientApp);
+    }
+    return messaging;
+  } catch (err: any) {
+    console.warn("[FCM] getFirebaseMessaging error:", err?.message || err);
     return null;
   }
-
-  const clientApp = getFirebaseClientApp();
-  if (!clientApp) return null;
-
-  if (!messaging) {
-    messaging = getMessaging(clientApp);
-  }
-  return messaging;
 }
 
 /**
