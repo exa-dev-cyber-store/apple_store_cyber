@@ -307,9 +307,9 @@ export default function OrderSummary({ subTotal }: OrderSummaryProps) {
           </div>
         )}
 
-        <div className="flex justify-between items-baseline pt-4 border-t border-neutral-200 text-sm font-bold text-neutral-900">
-          <span>Total</span>
-          <span className="text-xl font-extrabold text-neutral-900">
+        <div className="flex flex-wrap justify-between items-baseline gap-2 pt-4 border-t border-neutral-200 text-sm font-bold text-neutral-900">
+          <span className="text-xs text-neutral-600 font-medium">Total</span>
+          <span className="text-xl font-extrabold text-neutral-900 tracking-tight font-mono">
             {formatRupiah(finalTotal)}
           </span>
         </div>

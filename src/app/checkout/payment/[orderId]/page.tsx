@@ -638,20 +638,30 @@ export default function OrderPaymentPage({
               )}
 
               {/* Total Amount Due */}
-              <div className="flex justify-between items-baseline pt-4 border-t border-neutral-200 text-xs">
-                <span className="text-neutral-500">Total Payment Due:</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-xl sm:text-2xl font-extrabold text-neutral-900">
+              <div className="p-5 rounded-2xl bg-neutral-50 border border-neutral-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <span className="text-xs text-neutral-500 font-medium block">Total Payment Due</span>
+                  <span className="text-2xl sm:text-3xl font-extrabold text-neutral-900 tracking-tight font-mono block">
                     {formatRupiah(totalAmount)}
                   </span>
-                  <button
-                    onClick={() => copyToClipboard(String(totalAmount), "total")}
-                    title="Copy total amount"
-                    className="p-1.5 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-neutral-600 transition-colors"
-                  >
-                    {copiedField === "total" ? <FiCheck className="text-emerald-600" /> : <FiCopy />}
-                  </button>
                 </div>
+                <button
+                  onClick={() => copyToClipboard(String(totalAmount), "total")}
+                  title="Copy total amount"
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-neutral-200 hover:bg-neutral-100 text-neutral-800 text-xs font-semibold shadow-xs transition-all self-start sm:self-auto shrink-0"
+                >
+                  {copiedField === "total" ? (
+                    <>
+                      <FiCheck className="text-emerald-600 text-sm" />
+                      <span className="text-emerald-600 font-bold">Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <FiCopy className="text-neutral-500 text-sm" />
+                      <span>Copy Amount</span>
+                    </>
+                  )}
+                </button>
               </div>
 
               {/* Action Buttons */}
@@ -758,9 +768,9 @@ export default function OrderPaymentPage({
                       <span>-{formatRupiah(order.discount)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between items-baseline pt-2 border-t border-neutral-200 font-bold text-neutral-900 text-sm">
-                    <span>Total Payment</span>
-                    <span className="text-base font-extrabold text-neutral-900">
+                  <div className="flex flex-wrap justify-between items-baseline gap-2 pt-2 border-t border-neutral-200 font-bold text-neutral-900 text-sm">
+                    <span className="text-xs text-neutral-600 font-medium">Total Payment</span>
+                    <span className="text-base sm:text-lg font-extrabold text-neutral-900 tracking-tight font-mono">
                       {formatRupiah(totalAmount)}
                     </span>
                   </div>
