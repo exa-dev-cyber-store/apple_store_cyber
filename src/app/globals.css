@@ -13,12 +13,15 @@
     --apple-blue-hover: #0077ed;
   }
 
+  html,
   body {
     color: rgb(var(--foreground));
     background: #fbfbfd;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    max-width: 100vw;
   }
 }
 

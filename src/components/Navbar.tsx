@@ -151,15 +151,15 @@ export default function Navbar() {
 
   return (
     <header className="glass-nav sticky top-0 z-50 w-full transition-all duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-14 items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex h-14 items-center justify-between gap-1.5 sm:gap-4">
           {/* Brand / Logo */}
           <Link
             href="/"
-            className="flex items-center gap-2.5 group transition-transform duration-200 hover:scale-[1.02]"
+            className="flex items-center gap-1.5 sm:gap-2.5 group transition-transform duration-200 hover:scale-[1.02] shrink-0"
           >
-            <div className="relative w-8 h-8 rounded-xl p-[1px] bg-gradient-to-tr from-cyan-400 via-blue-500 to-indigo-600 shadow-[0_0_12px_rgba(6,182,212,0.4)] group-hover:shadow-[0_0_18px_rgba(6,182,212,0.7)] transition-all overflow-hidden flex items-center justify-center">
-              <div className="w-full h-full bg-[#080b11] rounded-[11px] flex items-center justify-center p-1">
+            <div className="relative w-7 h-7 sm:w-8 sm:h-8 rounded-xl p-[1px] bg-gradient-to-tr from-cyan-400 via-blue-500 to-indigo-600 shadow-[0_0_12px_rgba(6,182,212,0.4)] group-hover:shadow-[0_0_18px_rgba(6,182,212,0.7)] transition-all overflow-hidden flex items-center justify-center shrink-0">
+              <div className="w-full h-full bg-[#080b11] rounded-[10px] sm:rounded-[11px] flex items-center justify-center p-1">
                 <Image
                   src="/logo.png"
                   alt="Cyber Apple Logo"
@@ -170,11 +170,11 @@ export default function Navbar() {
                 />
               </div>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-extrabold tracking-tight text-base sm:text-lg text-neutral-900 group-hover:text-black transition-colors whitespace-nowrap">
+            <div className="flex items-center gap-1 sm:gap-1.5">
+              <span className="font-extrabold tracking-tight text-sm sm:text-base md:text-lg text-neutral-900 group-hover:text-black transition-colors whitespace-nowrap">
                 Cyber<span className="text-cyan-600">Apple</span>
               </span>
-              <span className="text-[9px] uppercase font-black tracking-widest px-1.5 py-0.5 bg-neutral-950 text-cyan-300 rounded-md border border-cyan-500/20 shadow-xs">
+              <span className="hidden min-[380px]:inline-block text-[8px] sm:text-[9px] uppercase font-black tracking-widest px-1 sm:px-1.5 py-0.5 bg-neutral-950 text-cyan-300 rounded-md border border-cyan-500/20 shadow-xs">
                 STORE
               </span>
             </div>
@@ -202,7 +202,7 @@ export default function Navbar() {
           </nav>
 
           {/* Right Action Icons & Search */}
-          <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
+          <div className="flex items-center gap-0.5 sm:gap-2 md:gap-3 shrink-0">
             {/* Search Input */}
             <form onSubmit={handleSearch} className="relative hidden xl:block">
               <input
@@ -219,9 +219,9 @@ export default function Navbar() {
             <Link
               href="/likes"
               aria-label="Wishlist"
-              className="relative p-2 text-neutral-600 hover:text-black transition-colors rounded-full hover:bg-neutral-100/80"
+              className="relative p-1.5 sm:p-2 text-neutral-600 hover:text-black transition-colors rounded-full hover:bg-neutral-100/80"
             >
-              <IoHeartOutline className="text-xl" />
+              <IoHeartOutline className="text-lg sm:text-xl" />
             </Link>
 
             {/* Notification Center Dropdown */}
@@ -232,11 +232,11 @@ export default function Navbar() {
               <button
                 onClick={() => setCartDropdownOpen(!cartDropdownOpen)}
                 aria-label="Shopping Cart"
-                className="relative p-2 text-neutral-600 hover:text-black transition-colors rounded-full hover:bg-neutral-100/80 flex items-center"
+                className="relative p-1.5 sm:p-2 text-neutral-600 hover:text-black transition-colors rounded-full hover:bg-neutral-100/80 flex items-center"
               >
-                <HiOutlineShoppingBag className="text-xl" />
+                <HiOutlineShoppingBag className="text-lg sm:text-xl" />
                 {totalQuantity > 0 && (
-                  <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-black text-[9px] font-bold text-white shadow-sm">
+                  <span className="absolute top-0.5 right-0.5 sm:top-1 sm:right-1 flex h-3.5 w-3.5 sm:h-4 sm:w-4 items-center justify-center rounded-full bg-black text-[8px] sm:text-[9px] font-bold text-white shadow-sm">
                     {totalQuantity}
                   </span>
                 )}
@@ -246,7 +246,7 @@ export default function Navbar() {
               {cartDropdownOpen && (
                 <div
                   onMouseLeave={() => setCartDropdownOpen(false)}
-                  className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white/95 backdrop-blur-xl border border-neutral-200 shadow-2xl p-4 z-50 animate-in fade-in zoom-in-95 duration-150"
+                  className="absolute right-0 mt-2 w-[calc(100vw-24px)] max-w-[320px] sm:w-80 md:w-96 rounded-2xl bg-white/95 backdrop-blur-xl border border-neutral-200 shadow-2xl p-4 z-50 animate-in fade-in zoom-in-95 duration-150"
                 >
                   <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
                     <h4 className="font-semibold text-sm text-neutral-900">
@@ -322,7 +322,7 @@ export default function Navbar() {
                   aria-label="User account menu"
                   className="flex items-center gap-1.5 p-0.5 rounded-full hover:bg-neutral-100 transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-full bg-neutral-900 text-white flex items-center justify-center text-xs font-semibold uppercase overflow-hidden flex-shrink-0 shadow-xs ring-1 ring-neutral-200">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-neutral-900 text-white flex items-center justify-center text-[11px] sm:text-xs font-semibold uppercase overflow-hidden flex-shrink-0 shadow-xs ring-1 ring-neutral-200">
                     {userAvatar && !imgError ? (
                       <img
                         src={getImageUrl(userAvatar)}
@@ -337,7 +337,7 @@ export default function Navbar() {
                 </div>
                 <ul
                   tabIndex={0}
-                  className="dropdown-content menu p-2 shadow-2xl bg-white/95 backdrop-blur-xl rounded-2xl w-56 mt-2 border border-neutral-200 z-50 text-xs"
+                  className="dropdown-content menu p-2 shadow-2xl bg-white/95 backdrop-blur-xl rounded-2xl w-52 sm:w-56 max-w-[calc(100vw-24px)] mt-2 border border-neutral-200 z-50 text-xs"
                 >
                   <li className="px-3 py-2 border-b border-neutral-100 mb-1 pointer-events-none">
                     <div className="flex items-center gap-2.5 p-0">
@@ -399,10 +399,10 @@ export default function Navbar() {
             {/* Mobile / Tablet Hamburger Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 text-neutral-600 hover:text-black rounded-lg hover:bg-neutral-100 transition-colors"
+              className="lg:hidden p-1.5 sm:p-2 text-neutral-600 hover:text-black rounded-lg hover:bg-neutral-100 transition-colors"
               aria-label="Toggle Menu"
             >
-              {mobileMenuOpen ? <HiXMark className="text-2xl" /> : <HiBars3 className="text-2xl" />}
+              {mobileMenuOpen ? <HiXMark className="text-xl sm:text-2xl" /> : <HiBars3 className="text-xl sm:text-2xl" />}
             </button>
           </div>
         </div>

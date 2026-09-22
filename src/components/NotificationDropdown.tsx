@@ -319,11 +319,11 @@ export default function NotificationDropdown() {
           if (!open) fetchNotifications();
         }}
         aria-label="Notifications"
-        className="relative p-2 rounded-full hover:bg-neutral-100 transition-colors text-neutral-700 hover:text-black flex items-center justify-center focus:outline-none"
+        className="relative p-1.5 sm:p-2 rounded-full hover:bg-neutral-100 transition-colors text-neutral-700 hover:text-black flex items-center justify-center focus:outline-none"
       >
-        <HiOutlineBell className="w-5 h-5" />
+        <HiOutlineBell className="w-4 h-4 sm:w-5 sm:h-5" />
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-rose-500 text-white text-[9px] font-bold shadow-sm animate-pulse">
+          <span className="absolute top-0.5 right-0.5 sm:top-1 sm:right-1 flex items-center justify-center min-w-[14px] sm:min-w-[16px] h-3.5 sm:h-4 px-1 rounded-full bg-rose-500 text-white text-[8px] sm:text-[9px] font-bold shadow-sm animate-pulse">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
@@ -331,7 +331,7 @@ export default function NotificationDropdown() {
 
       {/* Popover Dropdown */}
       {open && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white/95 backdrop-blur-xl border border-neutral-200/80 shadow-2xl z-50 overflow-hidden animate-fadeIn text-neutral-900">
+        <div className="absolute right-0 mt-2 w-[calc(100vw-24px)] max-w-[320px] sm:w-80 md:w-96 rounded-2xl bg-white/95 backdrop-blur-xl border border-neutral-200/80 shadow-2xl z-50 overflow-hidden animate-fadeIn text-neutral-900">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-100 bg-neutral-50/50">
             <div className="flex items-center gap-2">
