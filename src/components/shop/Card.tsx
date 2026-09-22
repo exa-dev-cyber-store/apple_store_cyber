@@ -173,11 +173,11 @@ export default function CardShop({
         </p>
 
         {/* Pricing */}
-        <div className="mt-3 flex items-baseline gap-2">
-          <span className="text-lg font-bold text-neutral-900">
+        <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 min-w-0">
+          <span className="text-base sm:text-lg font-bold text-neutral-900 tracking-tight">
             {formatRupiah(product.price)}
           </span>
-          <span className="text-xs text-neutral-400 line-through">
+          <span className="text-xs text-neutral-400 line-through whitespace-nowrap">
             {formatRupiah(originalPrice)}
           </span>
         </div>

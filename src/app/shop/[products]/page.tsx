@@ -265,11 +265,11 @@ export default function Detail({ params: { products } }: { params: { products: s
 
             {/* Price Box */}
             <div className="p-4 rounded-2xl bg-neutral-50 border border-neutral-200/60 space-y-1">
-              <div className="flex items-baseline gap-3">
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                 <span className="text-2xl sm:text-3xl font-extrabold text-neutral-900">
                   {formatRupiah(product.price)}
                 </span>
-                <span className="text-sm text-neutral-400 line-through">
+                <span className="text-sm text-neutral-400 line-through whitespace-nowrap">
                   {formatRupiah(originalPrice)}
                 </span>
               </div>
