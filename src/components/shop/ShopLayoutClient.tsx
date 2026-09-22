@@ -38,8 +38,8 @@ export default function ShopLayoutClient({ children }: { children: React.ReactNo
   const isCatalogRoot = pathname === "/shop" || pathname === "/shop/";
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 min-h-screen">
-      <div className="flex flex-col sm:flex-row items-start gap-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-10 min-h-screen">
+      <div className="flex flex-col lg:flex-row items-start gap-8">
         {isCatalogRoot && <SideBar categories={categories} />}
         <div className="flex-1 w-full min-w-0">{children}</div>
       </div>

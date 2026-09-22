@@ -120,7 +120,7 @@ export default function CardShop({
     typeof product.category === "object" ? product.category?.name : product.category;
 
   return (
-    <div className="group relative flex flex-col justify-between rounded-3xl bg-white p-5 border border-neutral-200/80 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+    <div className="group relative flex flex-col justify-between rounded-3xl bg-white p-4 sm:p-5 border border-neutral-200/80 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
       {/* Top action pills */}
       <div className="flex items-center justify-between z-10">
         {categoryName ? (
@@ -149,7 +149,7 @@ export default function CardShop({
       {/* Product Image */}
       <Link
         href={`/shop/${product._id}`}
-        className="relative my-4 flex aspect-square w-full items-center justify-center overflow-hidden rounded-2xl bg-neutral-50/60 p-4"
+        className="relative my-3 sm:my-4 flex aspect-square w-full items-center justify-center overflow-hidden rounded-2xl bg-neutral-50/80 p-3 sm:p-4"
       >
         <Image
           src={getImageUrl(product.image_thumbnail)}
@@ -174,7 +174,7 @@ export default function CardShop({
 
         {/* Pricing */}
         <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 min-w-0">
-          <span className="text-base sm:text-lg font-bold text-neutral-900 tracking-tight">
+          <span className="text-base sm:text-lg font-bold text-neutral-900 tracking-tight font-mono">
             {formatRupiah(product.price)}
           </span>
           <span className="text-xs text-neutral-400 line-through whitespace-nowrap">
@@ -186,13 +186,13 @@ export default function CardShop({
         <div className="mt-4 flex items-center gap-2">
           <Link
             href={`/shop/${product._id}`}
-            className="flex-1 py-2.5 px-3 text-center text-xs font-semibold rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-900 transition-colors"
+            className="flex-1 py-2 sm:py-2.5 px-3 text-center text-xs font-semibold rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-900 transition-colors"
           >
             Explore
           </Link>
           <button
             onClick={handleAddToCart}
-            className={`flex items-center justify-center gap-1.5 py-2.5 px-4 text-xs font-semibold rounded-full transition-all duration-200 active:scale-95 ${
+            className={`flex items-center justify-center gap-1.5 py-2 sm:py-2.5 px-3.5 sm:px-4 text-xs font-semibold rounded-full transition-all duration-200 active:scale-95 ${
               addedAnim
                 ? "bg-green-600 text-white"
                 : "bg-neutral-900 hover:bg-black text-white"
@@ -200,11 +200,11 @@ export default function CardShop({
           >
             {addedAnim ? (
               <>
-                <HiCheck className="text-sm" /> Added
+                <HiCheck className="text-sm shrink-0" /> <span className="truncate">Added</span>
               </>
             ) : (
               <>
-                <HiOutlineShoppingBag className="text-sm" /> Bag
+                <HiOutlineShoppingBag className="text-sm shrink-0" /> <span className="truncate">Bag</span>
               </>
             )}
           </button>

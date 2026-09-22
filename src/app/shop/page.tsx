@@ -134,7 +134,7 @@ export default function Shop() {
 
       {/* Main Products Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6">
           {[...Array(6)].map((_, i) => (
             <CardSkeleton key={i} />
           ))}
@@ -151,7 +151,7 @@ export default function Shop() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6">
             {details.products.map((product: CardProps) => (
               <CardShop
                 key={product._id}
