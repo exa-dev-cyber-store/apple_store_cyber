@@ -86,22 +86,22 @@ export default function Footer() {
             <h5 className="font-semibold text-neutral-200 mb-3">Cyber Services</h5>
             <ul className="space-y-2">
               <li>
-                <Link href="/shop" className="hover:text-white transition-colors">
-                  Apple Trade In
+                <Link href="/support" className="hover:text-white transition-colors">
+                  Customer Support
                 </Link>
               </li>
               <li>
-                <Link href="/shop" className="hover:text-white transition-colors">
-                  AppleCare+ Protection
+                <Link href="/account/order" className="hover:text-white transition-colors">
+                  Order Status & Tracking
                 </Link>
               </li>
               <li>
-                <Link href="/shop" className="hover:text-white transition-colors">
-                  Order Status
+                <Link href="/support" className="hover:text-white transition-colors">
+                  AppleCare+ & Warranty
                 </Link>
               </li>
               <li>
-                <Link href="/shop" className="hover:text-white transition-colors">
+                <Link href="/support" className="hover:text-white transition-colors">
                   Delivery Information
                 </Link>
               </li>
@@ -113,12 +113,12 @@ export default function Footer() {
             <ul className="space-y-2">
               <li>
                 <Link href="/account" className="hover:text-white transition-colors">
-                  Manage Apple ID
+                  Manage Profile
                 </Link>
               </li>
               <li>
                 <Link href="/account/order" className="hover:text-white transition-colors">
-                  Cyber Store Account
+                  Order History & Invoices
                 </Link>
               </li>
               <li>
@@ -144,7 +144,9 @@ export default function Footer() {
                 <span className="text-neutral-400">Jakarta, Indonesia</span>
               </li>
               <li>
-                <span className="text-neutral-400">info@cyberstore.id</span>
+                <Link href="/support" className="text-cyan-400 hover:underline">
+                  support@cyberstore.id
+                </Link>
               </li>
               <li>
                 <span className="text-neutral-400">+62 21 555 0199</span>
@@ -170,9 +172,10 @@ export default function Footer() {
             <span>Copyright &copy; {new Date().getFullYear()} Cyber Apple Store. All rights reserved.</span>
           </div>
           <div className="flex gap-6">
-            <Link href="/" className="hover:text-neutral-300">Privacy Policy</Link>
-            <Link href="/" className="hover:text-neutral-300">Terms of Use</Link>
-            <Link href="/" className="hover:text-neutral-300">Sales Policy</Link>
+            <Link href="/privacy-policy" className="hover:text-neutral-300 transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-neutral-300 transition-colors">Terms of Use</Link>
+            <Link href="/terms" className="hover:text-neutral-300 transition-colors">Sales Policy</Link>
+            <Link href="/support" className="hover:text-neutral-300 transition-colors">Help Center</Link>
             <span className="text-neutral-600">Indonesia (IDR)</span>
           </div>
         </div>
