@@ -337,26 +337,33 @@ export default function Navbar() {
                 </div>
                 <ul
                   tabIndex={0}
-                  className="dropdown-content menu p-2 shadow-2xl bg-white/95 backdrop-blur-xl rounded-2xl w-52 sm:w-56 max-w-[calc(100vw-24px)] mt-2 border border-neutral-200 z-50 text-xs"
+                  className="dropdown-content menu p-2 shadow-[0_20px_50px_rgba(0,0,0,0.18)] bg-white rounded-2xl w-64 sm:w-72 max-w-[calc(100vw-24px)] mt-2 border border-neutral-200/90 z-[9999] text-xs"
                 >
-                  <li className="px-3 py-2 border-b border-neutral-100 mb-1 pointer-events-none">
-                    <div className="flex items-center gap-2.5 p-0">
-                      <div className="w-8 h-8 rounded-full bg-neutral-900 text-white flex items-center justify-center text-xs font-bold uppercase overflow-hidden flex-shrink-0">
+                  <li className="px-3 py-2.5 border-b border-neutral-100 mb-1.5 pointer-events-none w-full">
+                    <div className="flex items-center gap-3 p-0 w-full min-w-0 overflow-hidden">
+                      <div className="w-9 h-9 rounded-full bg-neutral-900 text-white flex items-center justify-center text-xs font-bold uppercase overflow-hidden flex-shrink-0 shadow-xs ring-1 ring-neutral-200">
                         {userAvatar && !imgError ? (
                           <img
                             src={getImageUrl(userAvatar)}
                             alt={userName || "User"}
+                            onError={() => setImgError(true)}
                             className="w-full h-full object-cover"
                           />
                         ) : (
                           (userName || session?.user?.name || "U")[0]
                         )}
                       </div>
-                      <div className="min-w-0">
-                        <p className="font-bold text-neutral-900 truncate text-xs">
+                      <div className="min-w-0 flex-1 overflow-hidden">
+                        <p
+                          className="font-bold text-neutral-900 truncate text-xs block max-w-full leading-tight"
+                          title={userName || session?.user?.name || "Cyber Customer"}
+                        >
                           {userName || session?.user?.name || "Cyber Customer"}
                         </p>
-                        <p className="text-[10px] text-neutral-400 truncate">
+                        <p
+                          className="text-[10px] text-neutral-400 truncate block max-w-full mt-0.5"
+                          title={userEmail || session?.user?.email || ""}
+                        >
                           {userEmail || session?.user?.email}
                         </p>
                       </div>
@@ -462,9 +469,13 @@ export default function Navbar() {
                       (userName || session?.user?.name || "U")[0]
                     )}
                   </div>
-                  <div className="min-w-0 text-left">
-                    <p className="font-semibold text-neutral-900 truncate">{userName || session?.user?.name}</p>
-                    <p className="text-[10px] text-neutral-400 truncate">Manage Profile</p>
+                  <div className="min-w-0 flex-1 overflow-hidden text-left">
+                    <p className="font-semibold text-neutral-900 truncate max-w-full block text-xs">
+                      {userName || session?.user?.name}
+                    </p>
+                    <p className="text-[10px] text-neutral-400 truncate max-w-full block">
+                      Manage Profile
+                    </p>
                   </div>
                 </Link>
                 <button
