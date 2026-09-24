@@ -2,15 +2,16 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
-import { FiMail, FiCheckCircle, FiX, FiAlertCircle, FiRefreshCw } from "react-icons/fi";
+import { FiMail, FiCheckCircle, FiX, FiAlertCircle, FiRefreshCw, FiShield } from "react-icons/fi";
 import axios from "axios";
 
 interface VerifyEmailModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onClose?: () => void;
   email: string;
   onSuccess?: () => void;
   token?: string;
+  isMandatory?: boolean;
 }
 
 export default function VerifyEmailModal({
@@ -19,11 +20,13 @@ export default function VerifyEmailModal({
   email,
   onSuccess,
   token,
+  isMandatory = true,
 }: VerifyEmailModalProps) {
   const [mounted, setMounted] = useState(false);
   const [digits, setDigits] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
+  const [resendNotice, setResendNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [cooldown, setCooldown] = useState(60);
@@ -46,6 +49,7 @@ export default function VerifyEmailModal({
     if (isOpen) {
       setDigits(["", "", "", "", "", ""]);
       setError(null);
+      setResendNotice(null);
       setSuccess(false);
       setCooldown(60);
       const originalOverflow = document.body.style.overflow;
@@ -115,15 +119,15 @@ export default function VerifyEmailModal({
 
     setLoading(true);
     setError(null);
+    setResendNotice(null);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
       const config = token
         ? { headers: { Authorization: `Bearer ${token}` } }
         : { withCredentials: true };
 
       await axios.post(
-        `${apiUrl}/api/v1/users/verify-email`,
+        "/api/auth/verify-email",
         { code, email },
         config
       );
@@ -131,7 +135,7 @@ export default function VerifyEmailModal({
       setSuccess(true);
       setTimeout(() => {
         if (onSuccess) onSuccess();
-        onClose();
+        if (onClose) onClose();
       }, 1500);
     } catch (err: any) {
       const message =
@@ -149,21 +153,22 @@ export default function VerifyEmailModal({
 
     setResending(true);
     setError(null);
+    setResendNotice(null);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
       const config = token
         ? { headers: { Authorization: `Bearer ${token}` } }
         : { withCredentials: true };
 
       await axios.post(
-        `${apiUrl}/api/v1/users/resend-verification`,
+        "/api/auth/resend-verification",
         { email },
         config
       );
 
       setCooldown(60);
       setDigits(["", "", "", "", "", ""]);
+      setResendNotice("A new 6-digit verification code has been sent to your email.");
       inputRefs.current[0]?.focus();
     } catch (err: any) {
       const message =
@@ -178,7 +183,7 @@ export default function VerifyEmailModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 top-0 left-0 w-full h-full min-h-screen z-[99999] flex items-center justify-center p-4 sm:p-6 bg-black/75 backdrop-blur-md overflow-y-auto animate-modal-fade"
+      className="fixed inset-0 top-0 left-0 w-full h-full min-h-screen z-[99999] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md overflow-y-auto animate-modal-fade"
       role="dialog"
       aria-modal="true"
     >
@@ -186,26 +191,34 @@ export default function VerifyEmailModal({
         className="relative w-full max-w-md bg-[#0b0f19] border border-neutral-800 rounded-3xl shadow-2xl p-6 sm:p-8 text-neutral-100 animate-modal-scale"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          disabled={loading}
-          className="absolute top-4 right-4 p-2 rounded-full text-neutral-400 hover:text-white hover:bg-neutral-800/60 transition-colors disabled:opacity-50"
-          aria-label="Close modal"
-        >
-          <FiX className="text-lg" />
-        </button>
+        {/* Optional Close Button if not strictly mandatory */}
+        {!isMandatory && onClose && (
+          <button
+            onClick={onClose}
+            disabled={loading}
+            className="absolute top-4 right-4 p-2 rounded-full text-neutral-400 hover:text-white hover:bg-neutral-800/60 transition-colors disabled:opacity-50"
+            aria-label="Close modal"
+          >
+            <FiX className="text-lg" />
+          </button>
+        )}
 
         {/* Modal Header */}
         <div className="text-center mb-6">
           <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center shadow-[0_0_20px_rgba(6,182,212,0.15)]">
             <FiMail className="text-2xl" />
           </div>
+
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-[10px] font-semibold uppercase tracking-wider mb-2">
+            <FiShield className="text-xs" />
+            <span>Mandatory Email Verification</span>
+          </div>
+
           <h2 className="text-xl font-bold text-white tracking-tight">
             Verify Your Email Address
           </h2>
           <p className="text-neutral-400 text-xs mt-1.5 leading-relaxed">
-            We sent a 6-digit verification code to:
+            Please enter the 6-digit verification code sent to:
           </p>
           <div className="inline-block mt-1 px-3 py-1 rounded-full bg-neutral-900 border border-neutral-800 text-cyan-400 text-xs font-semibold">
             {email}
@@ -220,10 +233,17 @@ export default function VerifyEmailModal({
           </div>
         )}
 
+        {resendNotice && !error && (
+          <div className="mb-5 p-3.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs flex items-start gap-2.5">
+            <FiCheckCircle className="text-base shrink-0 mt-0.5" />
+            <span>{resendNotice}</span>
+          </div>
+        )}
+
         {success && (
           <div className="mb-5 p-3.5 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-xs flex items-center gap-2.5">
             <FiCheckCircle className="text-base shrink-0" />
-            <span>Email verified successfully! Redirecting...</span>
+            <span>Email verified successfully! Activating account...</span>
           </div>
         )}
 
@@ -254,7 +274,7 @@ export default function VerifyEmailModal({
               disabled={loading || success || digits.join("").length !== 6}
               className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-xs sm:text-sm transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
-              {loading ? "Verifying..." : "Verify Code & Activate"}
+              {loading ? "Verifying..." : "Verify Code & Activate Account"}
             </button>
           </div>
         </form>
@@ -273,17 +293,19 @@ export default function VerifyEmailModal({
           </button>
         </div>
 
-        {/* Skip for now */}
-        <div className="text-center mt-3">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={loading || success}
-            className="text-[11px] text-neutral-500 hover:text-neutral-300 transition-colors"
-          >
-            I will verify my email later
-          </button>
-        </div>
+        {/* Navigation fallback if user entered wrong email */}
+        {onClose && (
+          <div className="text-center mt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={loading || success}
+              className="text-[11px] text-neutral-500 hover:text-neutral-300 transition-colors"
+            >
+              Entered the wrong email? Click here to change
+            </button>
+          </div>
+        )}
       </div>
     </div>,
     document.body

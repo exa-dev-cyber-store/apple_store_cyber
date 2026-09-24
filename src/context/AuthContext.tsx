@@ -24,7 +24,7 @@ export interface AuthContextType {
   // Session compatibility alias for next-auth migration
   data: { user: UserProfile } | null;
   session: { user: UserProfile } | null;
-  loginWithCredentials: (credentials: { email: string; password: string }) => Promise<{ success: boolean; error?: string }>;
+  loginWithCredentials: (credentials: { email: string; password: string }) => Promise<{ success: boolean; requiresEmailVerification?: boolean; email?: string; error?: string }>;
   loginWithGoogle: (params: string | { code?: string; credential?: string }) => Promise<{ success: boolean; error?: string }>;
   loginWithApple: (params: { identityToken: string; email?: string; name?: string }) => Promise<{ success: boolean; error?: string }>;
   logout: (redirectUrl?: string) => Promise<void>;
@@ -82,7 +82,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        return { success: false, error: data.message || "Invalid email or password" };
+        return {
+          success: false,
+          requiresEmailVerification: Boolean(data?.requiresEmailVerification),
+          email: data?.email || credentials.email,
+          error: data.message || "Invalid email or password",
+        };
       }
 
       const profile: UserProfile = {

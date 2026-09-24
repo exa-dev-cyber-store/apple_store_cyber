@@ -21,10 +21,27 @@ export const POST = async (req: NextRequest) => {
     const data = await backendRes.json();
     const payload = data?.data || data;
 
-    if (!backendRes.ok || (!payload?.token && !payload?.accessToken)) {
+    if (!backendRes.ok) {
       return NextResponse.json(
         { message: data?.message || "Invalid email or password" },
         { status: backendRes.status || 401 }
+      );
+    }
+
+    if (payload?.requiresEmailVerification) {
+      return NextResponse.json({
+        success: false,
+        requiresEmailVerification: true,
+        email: payload.email || email,
+        message: data?.message || "Please verify your email address to continue.",
+        user: payload.user,
+      });
+    }
+
+    if (!payload?.token && !payload?.accessToken) {
+      return NextResponse.json(
+        { message: data?.message || "Invalid email or password" },
+        { status: 401 }
       );
     }
 
@@ -44,6 +61,7 @@ export const POST = async (req: NextRequest) => {
 
     return NextResponse.json({
       success: true,
+      requiresEmailVerification: false,
       user,
     });
   } catch (error: any) {

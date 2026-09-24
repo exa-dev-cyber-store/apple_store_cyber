@@ -7,20 +7,32 @@ import { FormEvent, useState, useEffect } from "react";
 import Image from "next/image";
 import { FcGoogle } from "react-icons/fc";
 import { SiApple } from "react-icons/si";
-import { FiArrowLeft } from "react-icons/fi";
+import { FiArrowLeft, FiCheckCircle } from "react-icons/fi";
+import VerifyEmailModal from "@/components/VerifyEmailModal";
 
 export default function Login() {
   const router = useRouter();
-  const { loginWithCredentials, loginWithGoogle, loginWithApple } = useAuth();
+  const { loginWithCredentials, loginWithGoogle, loginWithApple, refreshSession } = useAuth();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sessionExpiredNotice, setSessionExpiredNotice] = useState(false);
+  const [verifiedSuccessNotice, setVerifiedSuccessNotice] = useState(false);
+  const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState("");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       if (params.get("session_expired") === "true") {
         setSessionExpiredNotice(true);
+      }
+      if (params.get("verified") === "true") {
+        setVerifiedSuccessNotice(true);
+      }
+      const verifyEmailParam = params.get("verify_email");
+      if (verifyEmailParam) {
+        setUnverifiedEmail(verifyEmailParam);
+        setShowVerifyModal(true);
       }
     }
   }, []);
@@ -29,15 +41,21 @@ export default function Login() {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
+    setVerifiedSuccessNotice(false);
 
     const form = new FormData(e.currentTarget);
-    const email = form.get("email") as string;
+    const email = (form.get("email") as string)?.trim();
     const password = form.get("password") as string;
 
     const res = await loginWithCredentials({ email, password });
 
     if (!res.success) {
       setSubmitting(false);
+      if (res.requiresEmailVerification) {
+        setUnverifiedEmail(res.email || email);
+        setShowVerifyModal(true);
+        return;
+      }
       setError(res.error || "Invalid email address or password");
       return;
     }
@@ -214,6 +232,13 @@ export default function Login() {
           </div>
         )}
 
+        {verifiedSuccessNotice && (
+          <div className="p-3 rounded-xl bg-green-50 border border-green-200 text-xs text-green-700 text-center font-medium flex items-center justify-center gap-2">
+            <FiCheckCircle className="text-base text-green-600" />
+            <span>Email verified successfully! You can now sign in.</span>
+          </div>
+        )}
+
         {error && (
           <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-600 text-center font-medium">
             {error}
@@ -277,6 +302,18 @@ export default function Login() {
           </p>
         </div>
       </div>
+
+      <VerifyEmailModal
+        isOpen={showVerifyModal}
+        email={unverifiedEmail}
+        isMandatory={true}
+        onClose={() => setShowVerifyModal(false)}
+        onSuccess={() => {
+          refreshSession();
+          router.push("/shop");
+          router.refresh();
+        }}
+      />
     </div>
   );
 }

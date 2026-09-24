@@ -18,7 +18,7 @@ export default function Register() {
   const [showVerifyModal, setShowVerifyModal] = useState<boolean>(false);
   const [registeredEmail, setRegisteredEmail] = useState<string>("");
   const router = useRouter();
-  const { loginWithGoogle, loginWithApple } = useAuth();
+  const { loginWithGoogle, loginWithApple, refreshSession } = useAuth();
 
   const handleRegister = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -316,8 +316,13 @@ export default function Register() {
       <VerifyEmailModal
         isOpen={showVerifyModal}
         email={registeredEmail}
-        onClose={() => router.push("/login?registered=true")}
-        onSuccess={() => router.push("/login?verified=true")}
+        isMandatory={true}
+        onClose={() => setShowVerifyModal(false)}
+        onSuccess={() => {
+          refreshSession();
+          router.push("/shop");
+          router.refresh();
+        }}
       />
     </div>
   );
