@@ -10,10 +10,13 @@ import { useAuth } from "@/context/AuthContext";
 import { FcGoogle } from "react-icons/fc";
 import { SiApple } from "react-icons/si";
 import { FiArrowLeft } from "react-icons/fi";
+import VerifyEmailModal from "@/components/VerifyEmailModal";
 
 export default function Register() {
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [submitting, setSubmitting] = useState<boolean>(false);
+  const [showVerifyModal, setShowVerifyModal] = useState<boolean>(false);
+  const [registeredEmail, setRegisteredEmail] = useState<string>("");
   const router = useRouter();
   const { loginWithGoogle, loginWithApple } = useAuth();
 
@@ -56,7 +59,8 @@ export default function Register() {
       });
 
       if (res.status === 200 || res.status === 201) {
-        router.push("/login?registered=true");
+        setRegisteredEmail(email);
+        setShowVerifyModal(true);
       }
     } catch (err: any) {
       setErrorMessage(
@@ -308,6 +312,13 @@ export default function Register() {
           </p>
         </div>
       </div>
+
+      <VerifyEmailModal
+        isOpen={showVerifyModal}
+        email={registeredEmail}
+        onClose={() => router.push("/login?registered=true")}
+        onSuccess={() => router.push("/login?verified=true")}
+      />
     </div>
   );
 }
