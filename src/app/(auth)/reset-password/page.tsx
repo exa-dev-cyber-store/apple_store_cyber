@@ -40,11 +40,7 @@ function ResetPasswordForm() {
     setSubmitting(true);
 
     try {
-      const backendUrl =
-        process.env.NEXT_PUBLIC_API_URL ||
-        process.env.NEXT_PUBLIC_API_BACKEND_URL ||
-        "https://be-apple-store.eka-dev.cloud";
-      const res = await fetch(`${backendUrl}/auth/reset-password`, {
+      const res = await fetch("/api/auth/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: token.trim(), password }),

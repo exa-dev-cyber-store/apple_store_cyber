@@ -20,11 +20,7 @@ export default function ForgotPasswordPage() {
     setStatus({ type: null, message: "" });
 
     try {
-      const backendUrl =
-        process.env.NEXT_PUBLIC_API_URL ||
-        process.env.NEXT_PUBLIC_API_BACKEND_URL ||
-        "https://be-apple-store.eka-dev.cloud";
-      const res = await fetch(`${backendUrl}/auth/forgot-password`, {
+      const res = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.trim() }),
