@@ -76,13 +76,16 @@ export default function SetPasswordModal({
 
     setLoading(true);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+      const apiUrl =
+        process.env.NEXT_PUBLIC_API_URL ||
+        process.env.NEXT_PUBLIC_API_BACKEND_URL ||
+        "https://be-apple-store.eka-dev.cloud";
       const config = token
         ? { headers: { Authorization: `Bearer ${token}` } }
         : { withCredentials: true };
 
       await axios.post(
-        `${apiUrl}/api/v1/users/set-password`,
+        `${apiUrl}/auth/set-password`,
         { password, confirmPassword },
         config
       );
