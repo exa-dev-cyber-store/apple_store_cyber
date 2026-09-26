@@ -100,18 +100,19 @@ export default function DisconnectAppleModal({
             <div className="space-y-0.5">
               <p className="font-bold text-neutral-800">Account Access Remains Secure</p>
               <p className="text-neutral-500 leading-relaxed">
-                Your orders, invoices, and delivery addresses will remain fully intact and accessible through your connected Google account.
+                Your orders, invoices, and delivery addresses will remain fully intact and accessible through your email/password or connected account.
               </p>
             </div>
           </div>
 
-          <div className="pt-2 border-t border-neutral-200/60 flex items-center justify-between text-[11px]">
-            <span className="text-neutral-400 font-medium">Primary Login:</span>
-            <span className="font-semibold text-neutral-800 truncate max-w-[200px] flex items-center gap-1.5">
-              <FcGoogle className="text-sm flex-shrink-0" />
-              <span className="truncate">{googleEmail || "Connected Google Account"}</span>
-            </span>
-          </div>
+          {googleEmail && (
+            <div className="pt-2 border-t border-neutral-200/60 flex items-center justify-between text-[11px]">
+              <span className="text-neutral-400 font-medium">Primary Login:</span>
+              <span className="font-semibold text-neutral-800 truncate max-w-[200px] flex items-center gap-1.5">
+                <span className="truncate">{googleEmail}</span>
+              </span>
+            </div>
+          )}
 
           {appleEmail && (
             <div className="flex items-center justify-between text-[11px]">

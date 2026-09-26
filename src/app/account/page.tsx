@@ -399,7 +399,7 @@ export default function Profile() {
 
       if (res.ok && data.success) {
         const successMsg =
-          "Apple account disconnected successfully. Your account is now fully connected to your Google account.";
+          data.message || "Apple account disconnected successfully.";
         setStatusNotice({
           type: "success",
           message: successMsg,
@@ -844,7 +844,7 @@ export default function Profile() {
                 {accountData?.apple.linked && !accountData.canUnbindApple && (
                   <p className="text-[11px] text-amber-600 font-medium flex items-center gap-1 mt-1">
                     <FiAlertTriangle className="text-xs flex-shrink-0" />
-                    Link a Google account first to disconnect this Apple account
+                    Link a Google account or set a password to disconnect this Apple account
                   </p>
                 )}
               </div>
