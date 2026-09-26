@@ -418,6 +418,8 @@ export default function Profile() {
           message: errorMsg,
         });
         toast.error("Failed to Disconnect", errorMsg);
+        setIsDisconnectAppleModalOpen(false);
+        await fetchStatus();
       }
     } catch (err: any) {
       const errorMsg = "Network error while disconnecting Apple account.";
@@ -426,6 +428,7 @@ export default function Profile() {
         message: errorMsg,
       });
       toast.error("Network Error", errorMsg);
+      setIsDisconnectAppleModalOpen(false);
     } finally {
       setActionLoading(false);
     }

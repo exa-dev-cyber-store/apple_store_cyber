@@ -147,7 +147,10 @@ export function ToastContainer() {
   return (
     <>
       {/* Floating Dynamic Island Style Toasts */}
-      <div className="fixed top-5 left-1/2 -translate-x-1/2 z-[9999] flex flex-col items-center gap-2.5 pointer-events-none w-full max-w-sm px-4">
+      <div
+        className="fixed top-5 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2.5 pointer-events-none w-full max-w-sm px-4"
+        style={{ zIndex: 999999 }}
+      >
         {toasts.map((item) => (
           <div
             key={item.id}

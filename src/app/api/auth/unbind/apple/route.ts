@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export const POST = async () => {
   try {
-    const jwtToken = cookies().get("jwt")?.value;
+    const jwtToken = cookies().get("jwt")?.value || cookies().get("token")?.value;
     if (!jwtToken) {
       return NextResponse.json({ message: "Please sign in first" }, { status: 401 });
     }
