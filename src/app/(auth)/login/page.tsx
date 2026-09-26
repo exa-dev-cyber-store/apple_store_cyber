@@ -121,7 +121,9 @@ export default function Login() {
         process.env.NEXT_PUBLIC_APPLE_CLIENT_ID || "cloud.eka-dev.apple-store.service";
       const redirectURI =
         process.env.NEXT_PUBLIC_APPLE_REDIRECT_URI ||
-        "https://semilyrically-uniterative-zackary.ngrok-free.dev/api/auth/callback/apple";
+        (typeof window !== "undefined"
+          ? `${window.location.origin}/api/auth/callback/apple`
+          : "https://apple-store.eka-dev.cloud/api/auth/callback/apple");
 
       (window as any).AppleID.auth.init({
         clientId: appleClientId,

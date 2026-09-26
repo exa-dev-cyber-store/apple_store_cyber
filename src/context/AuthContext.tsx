@@ -229,6 +229,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Trigger Apple Sign In SDK
       if (typeof window !== "undefined" && (window as any).AppleID?.auth) {
         try {
+          const appleClientId =
+            process.env.NEXT_PUBLIC_APPLE_CLIENT_ID || "cloud.eka-dev.apple-store.service";
+          const redirectURI =
+            process.env.NEXT_PUBLIC_APPLE_REDIRECT_URI ||
+            `${window.location.origin}/api/auth/callback/apple`;
+
+          (window as any).AppleID.auth.init({
+            clientId: appleClientId,
+            scope: "name email",
+            redirectURI,
+            usePopup: true,
+          });
+
           const res = await (window as any).AppleID.auth.signIn();
           if (res?.authorization?.id_token) {
             let fullName: string | undefined;
