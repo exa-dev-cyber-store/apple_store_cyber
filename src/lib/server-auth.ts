@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { setAuthCookies, clearAuthCookies } from "./auth-cookies";
+import { proxyLog } from "./logger";
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -22,6 +23,7 @@ export async function getValidAccessToken(): Promise<string | null> {
     return null;
   }
 
+  proxyLog.refresh("start");
   return await refreshServerAccessToken(refreshToken);
 }
 
@@ -40,6 +42,7 @@ export async function refreshServerAccessToken(refreshToken: string): Promise<st
     });
 
     if (!refreshRes.ok) {
+      proxyLog.refresh("fail", `HTTP ${refreshRes.status}`);
       clearAuthCookies();
       return null;
     }
@@ -51,13 +54,15 @@ export async function refreshServerAccessToken(refreshToken: string): Promise<st
 
     if (newAccessToken) {
       setAuthCookies(newAccessToken, newRefreshToken);
+      proxyLog.refresh("success");
       return newAccessToken;
     }
 
+    proxyLog.refresh("fail", "No access token in refresh payload");
     clearAuthCookies();
     return null;
   } catch (error) {
-    console.error("Error refreshing server access token:", error);
+    proxyLog.refresh("fail", error instanceof Error ? error.message : String(error));
     return null;
   }
 }
@@ -71,9 +76,11 @@ export async function fetchWithAuth(
   url: string,
   init: RequestInit = {}
 ): Promise<Response> {
+  const method = (init.method || "GET").toUpperCase();
   let token = await getValidAccessToken();
 
   if (!token) {
+    proxyLog.error(method, url, new Error("Unauthorized (no valid access or refresh token)"));
     return new Response(
       JSON.stringify({ success: false, message: "Unauthorized" }),
       { status: 401, headers: { "Content-Type": "application/json" } }
@@ -83,28 +90,45 @@ export async function fetchWithAuth(
   const headers = new Headers(init.headers || {});
   headers.set("Authorization", `Bearer ${token}`);
 
-  let res = await fetch(url, {
-    ...init,
-    headers,
-    cache: "no-store",
-  });
+  proxyLog.request(method, url);
+  const startTime = Date.now();
 
-  // If backend returns 401, attempt a single refresh and retry
-  if (res.status === 401) {
-    const cookieStore = cookies();
-    const refreshToken = cookieStore.get("refreshToken")?.value;
-    if (refreshToken) {
-      const newToken = await refreshServerAccessToken(refreshToken);
-      if (newToken) {
-        headers.set("Authorization", `Bearer ${newToken}`);
-        res = await fetch(url, {
-          ...init,
-          headers,
-          cache: "no-store",
-        });
+  try {
+    let res = await fetch(url, {
+      ...init,
+      headers,
+      cache: "no-store",
+    });
+
+    // If backend returns 401, attempt a single refresh and retry
+    if (res.status === 401) {
+      const duration = Date.now() - startTime;
+      proxyLog.response(method, url, 401, duration);
+      console.warn(`\x1b[33m[Auth 401]\x1b[0m Backend rejected access token. Retrying with refresh...`);
+
+      const cookieStore = cookies();
+      const refreshToken = cookieStore.get("refreshToken")?.value;
+      if (refreshToken) {
+        const newToken = await refreshServerAccessToken(refreshToken);
+        if (newToken) {
+          headers.set("Authorization", `Bearer ${newToken}`);
+          const retryStart = Date.now();
+          res = await fetch(url, {
+            ...init,
+            headers,
+            cache: "no-store",
+          });
+          proxyLog.response(method, url, res.status, Date.now() - retryStart);
+          return res;
+        }
       }
+    } else {
+      proxyLog.response(method, url, res.status, Date.now() - startTime);
     }
-  }
 
-  return res;
+    return res;
+  } catch (error: any) {
+    proxyLog.error(method, url, error);
+    throw error;
+  }
 }

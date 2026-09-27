@@ -7,6 +7,9 @@ export async function middleware(request: Request) {
   const refreshToken = cookieStore.get("refreshToken")?.value;
 
   if (!token && !refreshToken) {
+    console.log(
+      `\x1b[33m[Middleware Guard]\x1b[0m No session tokens found for ${request.url}. Redirecting to /login`
+    );
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
@@ -45,6 +48,9 @@ export async function middleware(request: Request) {
         const newRefreshToken = payload?.refreshToken;
 
         if (newAccessToken) {
+          console.log(
+            `\x1b[32m[Middleware Auth]\x1b[0m Transparently refreshed token for ${request.url}`
+          );
           const response = NextResponse.next();
           const accessExpires = new Date(Date.now() + 15 * 60 * 1000);
           response.cookies.set("jwt", newAccessToken, {
@@ -79,6 +85,9 @@ export async function middleware(request: Request) {
     }
   }
 
+  console.warn(
+    `\x1b[31m[Middleware Guard]\x1b[0m Session expired for ${request.url}. Redirecting to /login?session_expired=true`
+  );
   // If both access token and refresh failed
   const response = NextResponse.redirect(
     new URL("/login?session_expired=true", request.url)
