@@ -1,20 +1,18 @@
-import axios from 'axios';
-import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from "next/server";
+import { fetchWithAuth, getValidAccessToken } from "@/lib/server-auth";
 
 export const GET = async (req: NextRequest) => {
-    const token = cookies().get('jwt') || cookies().get('token');
-    if (!token?.value) {
+    const token = await getValidAccessToken();
+    if (!token) {
         return NextResponse.json([]);
     }
-    const config = {
-        headers: {
-            'content-type': 'application/json',
-            Authorization: `Bearer ${token.value}`
-        }
-    };
     try {
-        const res = await fetch(`${process.env.API_ENDPOINT_DATA}/delivery-addresses`, config);
+        const res = await fetchWithAuth(`${process.env.API_ENDPOINT_DATA}/delivery-addresses`, {
+            method: "GET",
+            headers: {
+                'content-type': 'application/json',
+            }
+        });
         if (!res.ok) {
             return NextResponse.json([]);
         }
@@ -27,21 +25,18 @@ export const GET = async (req: NextRequest) => {
 };
 
 export const POST = async (req: NextRequest) => {
-    const token = cookies().get('jwt') || cookies().get('token');
-    if (!token?.value) {
-        return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-    const config = {
-        headers: {
-            Authorization: `Bearer ${token.value}`
-        }
-    };
     try {
         const payload = await req.json();
-        const { data } = await axios.post(`${process.env.API_ENDPOINT_DATA}/delivery-addresses`, payload, config);
-        return NextResponse.json(data);
+        const res = await fetchWithAuth(`${process.env.API_ENDPOINT_DATA}/delivery-addresses`, {
+            method: "POST",
+            headers: {
+                'content-type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json().catch(() => ({}));
+        return NextResponse.json(data, { status: res.status });
     } catch (error: any) {
-        const status = error.response?.status || 500;
-        return NextResponse.json({ message: error.response?.data?.message || error.message || 'Failed to create delivery address' }, { status });
+        return NextResponse.json({ message: error.message || 'Failed to create delivery address' }, { status: 500 });
     }
 };

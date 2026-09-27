@@ -120,7 +120,13 @@ export default function Profile() {
 
   const fetchStatus = async () => {
     try {
-      const res = await fetch("/api/auth/linked-accounts");
+      let res = await fetch("/api/auth/linked-accounts");
+      if (res.status === 401) {
+        const refreshRes = await fetch("/api/auth/refresh", { method: "POST" });
+        if (refreshRes.ok) {
+          res = await fetch("/api/auth/linked-accounts");
+        }
+      }
       if (res.status === 401) {
         logout("/login?session_expired=true");
         return;
@@ -138,7 +144,13 @@ export default function Profile() {
 
   const fetchProfile = async () => {
     try {
-      const res = await fetch("/api/auth/profile");
+      let res = await fetch("/api/auth/profile");
+      if (res.status === 401) {
+        const refreshRes = await fetch("/api/auth/refresh", { method: "POST" });
+        if (refreshRes.ok) {
+          res = await fetch("/api/auth/profile");
+        }
+      }
       if (res.status === 401) {
         logout("/login?session_expired=true");
         return;

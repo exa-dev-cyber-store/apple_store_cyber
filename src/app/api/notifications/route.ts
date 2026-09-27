@@ -1,9 +1,9 @@
-import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { fetchWithAuth, getValidAccessToken } from "@/lib/server-auth";
 
 export async function GET(req: NextRequest) {
   try {
-    const token = cookies().get("jwt")?.value || cookies().get("token")?.value;
+    const token = await getValidAccessToken();
     if (!token) {
       return NextResponse.json({
         success: true,
@@ -14,14 +14,10 @@ export async function GET(req: NextRequest) {
     const backendUrl = process.env.API_ENDPOINT_DATA || "http://localhost:5000/api";
     const { searchParams } = new URL(req.url);
 
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    };
-
-    const res = await fetch(`${backendUrl}/notifications?${searchParams.toString()}`, {
-      headers,
-      cache: "no-store",
+    const res = await fetchWithAuth(`${backendUrl}/notifications?${searchParams.toString()}`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
 
     const data = await res.json();

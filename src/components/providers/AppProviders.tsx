@@ -22,10 +22,26 @@ interface CartItems {
 
 function AuthSessionGuard() {
   const pathname = usePathname();
-  const { logout, status } = useAuth();
+  const { logout, status, refreshSession } = useAuth();
 
   useEffect(() => {
     let isLoggingOut = false;
+    let isRefreshing = false;
+    let failedQueue: Array<{
+      resolve: (value?: any) => void;
+      reject: (reason?: any) => void;
+    }> = [];
+
+    const processQueue = (error: any = null) => {
+      failedQueue.forEach((prom) => {
+        if (error) {
+          prom.reject(error);
+        } else {
+          prom.resolve();
+        }
+      });
+      failedQueue = [];
+    };
 
     // Only guard protected routes when user is authenticated
     const isProtectedRoute =
@@ -46,19 +62,55 @@ function AuthSessionGuard() {
       await logout("/login?session_expired=true");
     };
 
-    // Axios 401 response interceptor
+    // Axios 401 response interceptor with automatic refresh
     const axiosInterceptor = axios.interceptors.response.use(
       (res) => res,
-      (error) => {
-        if (error?.response?.status === 401) {
-          const url = error?.config?.url || "";
-          const isAuthEndpoint =
-            url.includes("/api/auth/") ||
-            url.includes("/login") ||
-            url.includes("/auth/");
+      async (error) => {
+        const originalRequest = error?.config;
+        const status401 = error?.response?.status === 401;
 
-          if (!isAuthEndpoint && status === "authenticated" && isProtectedRoute) {
-            triggerAutoLogout();
+        if (status401 && originalRequest && !originalRequest._retry) {
+          const url = originalRequest.url || "";
+          const isAuthEndpoint =
+            url.includes("/api/auth/refresh") ||
+            url.includes("/api/auth/login") ||
+            url.includes("/api/auth/logout") ||
+            url.includes("/login");
+
+          if (!isAuthEndpoint) {
+            if (isRefreshing) {
+              return new Promise((resolve, reject) => {
+                failedQueue.push({ resolve, reject });
+              })
+                .then(() => axios(originalRequest))
+                .catch((err) => Promise.reject(err));
+            }
+
+            originalRequest._retry = true;
+            isRefreshing = true;
+
+            try {
+              const refreshRes = await fetch("/api/auth/refresh", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+              });
+
+              if (refreshRes.ok) {
+                processQueue(null);
+                isRefreshing = false;
+                await refreshSession();
+                return axios(originalRequest);
+              }
+            } catch (refreshErr) {
+              processQueue(refreshErr);
+            } finally {
+              isRefreshing = false;
+            }
+
+            // Only trigger auto logout if refresh truly failed on a protected route
+            if (status === "authenticated" && isProtectedRoute) {
+              triggerAutoLogout();
+            }
           }
         }
         return Promise.reject(error);
@@ -68,7 +120,7 @@ function AuthSessionGuard() {
     return () => {
       axios.interceptors.response.eject(axiosInterceptor);
     };
-  }, [pathname, status, logout]);
+  }, [pathname, status, logout, refreshSession]);
 
   return null;
 }

@@ -1,19 +1,19 @@
-import axios from "axios";
-import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from "next/server";
+import { fetchWithAuth, getValidAccessToken } from "@/lib/server-auth";
 
 export const GET = async (req: NextRequest) => {
-    const cookie = cookies().get('jwt') || cookies().get('token');
-    if (!cookie?.value) {
+    const token = await getValidAccessToken();
+    if (!token) {
         return NextResponse.json([]);
     }
-    const config = {
-        headers: {
-            Authorization: `Bearer ${cookie.value}`
-        }
-    };
     try {
-        const { data } = await axios.get(`${process.env.API_ENDPOINT_DATA}/likes`, config);
+        const res = await fetchWithAuth(`${process.env.API_ENDPOINT_DATA}/likes`, {
+            method: "GET",
+        });
+        if (!res.ok) {
+            return NextResponse.json([]);
+        }
+        const data = await res.json();
         const list = Array.isArray(data) ? data : (data?.data || data?.likes || []);
         return NextResponse.json(list);
     } catch (error: any) {
@@ -22,21 +22,18 @@ export const GET = async (req: NextRequest) => {
 };
 
 export const POST = async (req: NextRequest) => {
-    const cookie = cookies().get('jwt') || cookies().get('token');
-    if (!cookie?.value) {
-        return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-    const request: { productId: string } = await req.json();
-    const config = {
-        headers: {
-            Authorization: `Bearer ${cookie.value}`
-        }
-    };
     try {
-        const res = await axios.post(`${process.env.API_ENDPOINT_DATA}/likes`, request, config);
-        return NextResponse.json(res.data);
+        const request: { productId: string } = await req.json();
+        const res = await fetchWithAuth(`${process.env.API_ENDPOINT_DATA}/likes`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(request),
+        });
+        const data = await res.json().catch(() => ({}));
+        return NextResponse.json(data, { status: res.status });
     } catch (error: any) {
-        const status = error.response?.status || 500;
-        return NextResponse.json({ message: error.response?.data?.message || error.message || 'Failed to update like' }, { status });
+        return NextResponse.json({ message: error.message || 'Failed to update like' }, { status: 500 });
     }
 };

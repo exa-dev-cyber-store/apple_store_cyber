@@ -1,5 +1,4 @@
-import axios from "axios";
-import { cookies } from "next/headers";
+import { fetchWithAuth } from "@/lib/server-auth";
 import { NextRequest, NextResponse } from "next/server";
 
 export const GET = async (
@@ -8,27 +7,17 @@ export const GET = async (
 ) => {
   try {
     const { id } = params;
-    const token = cookies().get("jwt");
-
-    const config = token?.value
-      ? {
-          headers: {
-            Authorization: `Bearer ${token.value}`,
-          },
-        }
-      : undefined;
-
-    const response = await axios.get(
-      `${process.env.API_ENDPOINT_DATA}/orders/${id}/status`,
-      config
+    const response = await fetchWithAuth(
+      `${process.env.API_ENDPOINT_DATA}/orders/${id}/status`
     );
 
-    return NextResponse.json(response.data);
+    const data = await response.json();
+    return NextResponse.json(data, { status: response.status });
   } catch (error: any) {
-    console.error("Order status check error:", error.response?.data || error.message);
-    const status = error.response?.status || 500;
-    const message =
-      error.response?.data?.message || "Failed to fetch order payment status";
-    return NextResponse.json({ message }, { status });
+    console.error("Order status check error:", error.message);
+    return NextResponse.json(
+      { message: "Failed to fetch order payment status" },
+      { status: 500 }
+    );
   }
 };

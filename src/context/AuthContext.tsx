@@ -45,19 +45,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshSession = useCallback(async (): Promise<UserProfile | null> => {
     try {
-      const res = await fetch("/api/auth/me");
-      if (res.ok) {
-        const data = await res.json();
-        if (data?.user) {
-          const profile: UserProfile = {
-            ...data.user,
-            image: data.user.avatar || data.user.image || null,
-          };
-          setUser(profile);
-          setStatus("authenticated");
-          return profile;
+      let res = await fetch("/api/auth/me");
+      let data = res.ok ? await res.json() : null;
+
+      // If /me returned no user, attempt token refresh via refreshToken cookie
+      if (!data?.user) {
+        const refreshRes = await fetch("/api/auth/refresh", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+        if (refreshRes.ok) {
+          res = await fetch("/api/auth/me");
+          data = res.ok ? await res.json() : null;
         }
       }
+
+      if (data?.user) {
+        const profile: UserProfile = {
+          ...data.user,
+          image: data.user.avatar || data.user.image || null,
+        };
+        setUser(profile);
+        setStatus("authenticated");
+        return profile;
+      }
+
       setUser(null);
       setStatus("unauthenticated");
       return null;
@@ -70,6 +82,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     refreshSession();
+  }, [refreshSession]);
+
+  useEffect(() => {
+    const handleAuthRefreshed = () => {
+      refreshSession();
+    };
+    window.addEventListener("auth-refreshed", handleAuthRefreshed);
+    return () => {
+      window.removeEventListener("auth-refreshed", handleAuthRefreshed);
+    };
   }, [refreshSession]);
 
   const loginWithCredentials = async (credentials: { email: string; password: string }) => {

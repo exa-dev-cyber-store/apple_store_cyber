@@ -36,15 +36,21 @@ export default function LayoutProfile({
   }, [session?.user?.image, session?.user?.name, session?.user?.email]);
 
   useEffect(() => {
-    fetch("/api/auth/profile")
-      .then((res) => {
+    const fetchLayoutProfile = async () => {
+      try {
+        let res = await fetch("/api/auth/profile");
+        if (res.status === 401) {
+          const refreshRes = await fetch("/api/auth/refresh", { method: "POST" });
+          if (refreshRes.ok) {
+            res = await fetch("/api/auth/profile");
+          }
+        }
         if (res.status === 401) {
           logout("/login?session_expired=true");
-          return null;
+          return;
         }
-        return res.ok ? res.json() : null;
-      })
-      .then((data) => {
+        if (!res.ok) return;
+        const data = await res.json();
         const u = data?.data?.user;
         if (u) {
           if (u.avatar) {
@@ -54,8 +60,12 @@ export default function LayoutProfile({
           if (u.name) setUserName(u.name);
           if (u.email) setUserEmail(u.email);
         }
-      })
-      .catch(() => {});
+      } catch {
+        // ignore network error
+      }
+    };
+
+    fetchLayoutProfile();
   }, []);
 
   useEffect(() => {

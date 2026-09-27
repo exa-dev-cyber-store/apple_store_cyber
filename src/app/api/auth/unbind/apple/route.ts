@@ -1,23 +1,17 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { fetchWithAuth } from "@/lib/server-auth";
 
 export const POST = async () => {
   try {
-    const jwtToken = cookies().get("jwt")?.value || cookies().get("token")?.value;
-    if (!jwtToken) {
-      return NextResponse.json({ message: "Please sign in first" }, { status: 401 });
-    }
-
     const backendUrl = process.env.API_ENDPOINT_USER || "http://localhost:5000/auth";
-    const backendRes = await fetch(`${backendUrl}/unbind/apple`, {
+    const backendRes = await fetchWithAuth(`${backendUrl}/unbind/apple`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${jwtToken}`,
       },
     });
 
-    const data = await backendRes.json();
+    const data = await backendRes.json().catch(() => ({}));
 
     if (!backendRes.ok || !data.success) {
       return NextResponse.json(

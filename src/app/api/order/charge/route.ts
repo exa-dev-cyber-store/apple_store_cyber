@@ -1,51 +1,43 @@
-import axios from "axios";
-import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { fetchWithAuth } from "@/lib/server-auth";
 
 export const POST = async (req: NextRequest) => {
   try {
     const body = await req.json();
-    const token = cookies().get("jwt");
-
-    if (!token?.value) {
-      return NextResponse.json(
-        { message: "Unauthorized. Please login first." },
-        { status: 401 }
-      );
-    }
 
     const overrideNotification =
       req.headers.get("x-override-notification") ||
       process.env.MIDTRANS_OVERRIDE_NOTIFICATION_URL;
 
-    const config = {
-      headers: {
-        Authorization: `Bearer ${token.value}`,
-        ...(overrideNotification
-          ? { "x-override-notification": overrideNotification }
-          : {}),
-      },
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      ...(overrideNotification
+        ? { "x-override-notification": overrideNotification }
+        : {}),
     };
 
-    const response = await axios.post(
+    const response = await fetchWithAuth(
       `${process.env.API_ENDPOINT_DATA}/orders/charge`,
-      body,
-      config
+      {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body),
+      }
     );
 
-    const payload = response.data?.data || response.data;
+    const responseData = await response.json().catch(() => ({}));
+    const payload = responseData?.data || responseData;
     return NextResponse.json({
-      ...response.data,
+      ...responseData,
       ...payload,
-      status: payload?.status || response.data?.status || (response.data?.success ? "success" : "failed"),
-      order: payload?.order || response.data?.order,
-      charge: payload?.charge || response.data?.charge,
-    });
+      status: payload?.status || responseData?.status || (responseData?.success ? "success" : "failed"),
+      order: payload?.order || responseData?.order,
+      charge: payload?.charge || responseData?.charge,
+    }, { status: response.status });
   } catch (error: any) {
-    console.error("Order charge error:", error.response?.data || error.message);
-    const status = error.response?.status || 500;
-    const message =
-      error.response?.data?.message || "Failed to process Core API payment";
-    return NextResponse.json({ message, error: error.response?.data }, { status });
+    return NextResponse.json(
+      { message: error?.message || "Failed to process Core API payment" },
+      { status: 500 }
+    );
   }
 };

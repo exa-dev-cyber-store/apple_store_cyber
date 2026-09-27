@@ -1,28 +1,26 @@
-import axios from "axios";
-import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { fetchWithAuth, getValidAccessToken } from "@/lib/server-auth";
 
-export const POST = async (req: NextRequest, res: NextResponse) => {
-    const body = await req.json()
-    const token = cookies().get('jwt')
-    const config = {
-        headers: {
-            Authorization: `Bearer ${token?.value}`
-        }
-    }
+export const POST = async (req: NextRequest) => {
     try {
-        const { data } = await axios.post(`${process.env.API_ENDPOINT_DATA}/orders`, body, config)
-        return NextResponse.json(data)
+        const body = await req.json();
+        const res = await fetchWithAuth(`${process.env.API_ENDPOINT_DATA}/orders`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(body),
+        });
+        const data = await res.json().catch(() => ({}));
+        return NextResponse.json(data, { status: res.status });
     } catch (error: any) {
-        console.error(error);
-        const status = error.response?.status || 500;
-        return NextResponse.json({ message: error.response?.data?.message || error.message || 'Failed to create order' }, { status });
+        return NextResponse.json({ message: error.message || 'Failed to create order' }, { status: 500 });
     }
 };
 
-export const GET = async (req: NextRequest, res: NextResponse) => {
-    const token = cookies().get('jwt');
-    if (!token?.value) {
+export const GET = async (req: NextRequest) => {
+    const token = await getValidAccessToken();
+    if (!token) {
         return NextResponse.json({
             data: [],
             orders: [],
@@ -33,11 +31,6 @@ export const GET = async (req: NextRequest, res: NextResponse) => {
             limit: 5,
         });
     }
-    const config = {
-        headers: {
-            Authorization: `Bearer ${token?.value}`
-        }
-    };
     try {
         const { searchParams } = new URL(req.url);
         const page = searchParams.get("page");
@@ -50,7 +43,21 @@ export const GET = async (req: NextRequest, res: NextResponse) => {
         if (status) queryParams.set("status", status);
         const qs = queryParams.toString() ? `?${queryParams.toString()}` : "";
 
-        const { data } = await axios.get(`${process.env.API_ENDPOINT_DATA}/orders${qs}`, config);
+        const res = await fetchWithAuth(`${process.env.API_ENDPOINT_DATA}/orders${qs}`, {
+            method: "GET",
+        });
+        if (!res.ok) {
+            return NextResponse.json({
+                data: [],
+                orders: [],
+                count: 0,
+                total: 0,
+                totalPages: 1,
+                currentPage: 1,
+                limit: 5,
+            });
+        }
+        const data = await res.json();
         const list = Array.isArray(data) ? data : (data?.data || data?.orders || []);
 
         return NextResponse.json({
@@ -63,7 +70,6 @@ export const GET = async (req: NextRequest, res: NextResponse) => {
             limit: data?.limit ?? (limit ? parseInt(limit) : list.length),
         });
     } catch (error: any) {
-        console.error(error);
         return NextResponse.json({
             data: [],
             orders: [],
@@ -74,4 +80,4 @@ export const GET = async (req: NextRequest, res: NextResponse) => {
             limit: 5,
         });
     }
-}
+};
